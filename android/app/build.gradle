@@ -1,0 +1,125 @@
+plugins {
+    id "com.android.application"
+    id "kotlin-android"
+    id "dev.flutter.flutter-gradle-plugin"
+}
+
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+}
+
+def flutterVersionCode = localProperties.getProperty('flutter.versionCode')
+if (flutterVersionCode == null) {
+    flutterVersionCode = '1'
+}
+
+def flutterVersionName = localProperties.getProperty('flutter.versionName')
+if (flutterVersionName == null) {
+    flutterVersionName = '1.0'
+}
+apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
+
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
+android {
+    namespace "com.aiche.aiche"
+    compileSdkVersion 34
+    ndkVersion = "27.0.12077973"
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+        // Enable desugaring
+        coreLibraryDesugaringEnabled true
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+
+    defaultConfig {
+        applicationId "com.aiche.aiche"
+        minSdkVersion 23
+        targetSdkVersion flutter.targetSdkVersion
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
+        multiDexEnabled true
+    }
+
+       signingConfigs {
+           release {
+               keyAlias keystoreProperties['keyAlias']
+               keyPassword keystoreProperties['keyPassword']
+               storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+               storePassword keystoreProperties['storePassword']
+           }
+       }
+    buildTypes {
+        release {
+            signingConfig signingConfigs.debug
+            // Commenting out the release signing config temporarily
+            // signingConfig signingConfigs.release
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+//    splits {
+//        abi {
+//            enable true
+//            reset()
+//            include 'armeabi-v7a', 'arm64-v8a', 'x86_64'
+//            universalApk false
+//        }
+//    }
+}
+
+flutter {
+    source '../..'
+}
+
+dependencies {
+    implementation platform('com.google.firebase:firebase-bom:33.5.1')
+    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'io.branch.sdk.android:library:5.12.4'
+    implementation 'store.galaxy.samsung.installreferrer:samsung_galaxystore_install_referrer:4.0.0'
+    implementation 'com.google.android.gms:play-services-ads-identifier:18.1.0'
+    // Add desugaring dependency
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.2.2'
+    
+    // Fix for androidx.window NoSuchMethodError
+    implementation 'androidx.window:window:1.1.0'
+    implementation 'androidx.window:window-java:1.1.0'
+}
+
+
+// Automation and Smart Mining:
+// Rio Tinto and BHP autonomous mining case studies
+// Fresnillo plc remote operations centers in Mexican silver mines
+// Industry reports on smart ventilation systems in underground mining
+// AI and Machine Learning in Ore Analysis:
+// Research from the article "Real-time ore sorting using color and texture analysis" (Science Direct)
+// Goldspot Discoveries and IBM AI exploration platforms
+// Case study of AI optimization in a Peruvian silver mine
+// Bioleaching and Eco-friendly Technologies:
+// BacTech Environmental Corporation's bioleaching technology
+// Research on thiosulfate and glycine leaching as cyanide alternatives
+// Cannington silver mine solar power implementation case study
+// Innovations in Waste Management and Recycling:
+// Greens Creek mine (Alaska) dry stacking implementation
+// Pueblo Viejo mine tailings reprocessing project
+// Umicore's integrated precious metal recycling from e-waste
+// Industry data on carbon footprint reduction through urban mining

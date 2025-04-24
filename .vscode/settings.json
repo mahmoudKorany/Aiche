@@ -1,0 +1,14 @@
+{
+    "debug.toolBarLocation": "floating",
+    "debug.openDebug": "openOnDebugBreak",
+    "debug.internalConsoleOptions": "openOnSessionStart",
+    "dart.debugExternalPackageLibraries": true,
+    "dart.debugSdkLibraries": false,
+    "dart.previewHotReloadOnSaveWatcher": true,
+    "dart.hotReloadOnSave": "all",
+    "dart.flutterHotReloadOnSave": "all",
+    "dart.previewFlutterUiGuides": true,
+    "dart.previewFlutterUiGuidesCustomTracking": true,
+    "dart.showInspectorNotificationsForWidgetErrors": true,
+    "workbench.statusBar.visible": true
+}

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "398829340890",
+    "project_id": "notfication-a3dd6",
+    "storage_bucket": "notfication-a3dd6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:398829340890:android:89fd4b325c13c08632bde3",
+        "android_client_info": {
+          "package_name": "com.aiche.aiche"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAKMUDTNKfPeWQE1ub2q9G378546amGY7w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
