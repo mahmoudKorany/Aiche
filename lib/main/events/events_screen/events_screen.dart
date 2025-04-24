@@ -93,8 +93,8 @@ class EventsScreen extends StatelessWidget {
                                             builder:
                                                 (context, double value, child) {
                                               return Transform.translate(
-                                                offset:
-                                                    Offset(0, 32 * (1 - value)),
+                                                offset: Offset(
+                                                    0, 32.h * (1 - value)),
                                                 child: Opacity(
                                                   opacity: value,
                                                   child: Container(
@@ -122,7 +122,7 @@ class EventsScreen extends StatelessWidget {
                                                       border: Border.all(
                                                         color: Colors.white
                                                             .withOpacity(0.1),
-                                                        width: 1,
+                                                        width: 1.r,
                                                       ),
                                                     ),
                                                     child: Column(
@@ -398,7 +398,7 @@ class EventsScreen extends StatelessWidget {
             ),
             VerticalDivider(
               color: Colors.white.withOpacity(0.2),
-              thickness: 1,
+              thickness: 1.r,
               width: 32.w,
             ),
             Expanded(

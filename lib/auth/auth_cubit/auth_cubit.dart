@@ -16,7 +16,6 @@ import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:path/path.dart';
 
 class AuthCubit extends Cubit<AuthState> {
   AuthCubit() : super(AuthInitial());
@@ -26,8 +25,7 @@ class AuthCubit extends Cubit<AuthState> {
 
   // login
   Future<void> login(
-      String email, String password, BuildContext context) async
-  {
+      String email, String password, BuildContext context) async {
     emit(AuthLoading());
     String? fcmToken;
     try {
@@ -42,10 +40,9 @@ class AuthCubit extends Cubit<AuthState> {
         data: {
           'email': email,
           'password': password,
-          "fcm_token": fcmToken ??'no token'
+          "fcm_token": fcmToken ?? 'no token'
         },
       );
-
 
       if (response.statusCode == 200) {
         try {
@@ -79,39 +76,39 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   // register
-  Future<void> register(String name, String email, String password,context) async
-  {
+  Future<void> register(
+      String name, String email, String password, context) async {
     emit(RegisterLoading());
     String? fcmToken;
     try {
       fcmToken = await FirebaseMessaging.instance.getToken();
     } catch (e) {
-     // debugPrint("Could not get FCM token: $e");
+      // debugPrint("Could not get FCM token: $e");
       // Continue with login even if we can't get FCM token
     }
 
     try {
       final response =
-      await DioHelper.postData(url: UrlConstants.register, data: {
+          await DioHelper.postData(url: UrlConstants.register, data: {
         'name': name,
         'email': email,
         'password': password,
-        "fcm_token": fcmToken ??'no token ${DateTime.now().toString()}'});
-          await CacheHelper.saveData(
-              key: 'token', value: response.data['token']).then((v) async {
-          });
-          await BlogsCubit.get(context).getBlogs();
+        "fcm_token": fcmToken ?? 'no token ${DateTime.now().toString()}'
+      });
+      await CacheHelper.saveData(key: 'token', value: response.data['token'])
+          .then((v) async {});
+      await BlogsCubit.get(context).getBlogs();
       await LayoutCubit.get(context).getHomeBanner();
       await LayoutCubit.get(context).getAwards();
       await LayoutCubit.get(context).getMaterial();
-          await getUserData();
-          await EventsCubit.get(context).fetchEvents();
+      await getUserData();
+      await EventsCubit.get(context).fetchEvents();
       navigateAndFinish(
         context: context,
         widget: const HomeLayoutScreen(),
       );
       showToast(msg: 'Register done Successfully', state: MsgState.success);
-        emit(RegisterSuccess());
+      emit(RegisterSuccess());
     } catch (e) {
       showToast(
           msg: 'Register Failed: Email or password is incorrect',
@@ -138,7 +135,7 @@ class AuthCubit extends Cubit<AuthState> {
       }
     } catch (e) {
       // print(token);
-       //print(e.toString());
+      //print(e.toString());
       emit(GetUserDataError(e.toString()));
     }
   }

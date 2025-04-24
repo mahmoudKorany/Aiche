@@ -2,8 +2,6 @@ import 'package:aiche/auth/auth_cubit/auth_cubit.dart';
 import 'package:aiche/core/shared/components/components.dart';
 import 'package:aiche/core/shared/components/gaps.dart';
 import 'package:aiche/core/shared/constants/constants.dart';
-import 'package:aiche/core/shared/functions/functions.dart';
-import 'package:aiche/main/home/home_screen/home_layout_screen.dart';
 import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -319,7 +317,9 @@ class _RegisterScreenState extends State<RegisterScreen>
                                         });
                                       },
                                       icon: Icon(
-                                        hidden ? Iconsax.eye : Iconsax.eye_slash,
+                                        hidden
+                                            ? Iconsax.eye
+                                            : Iconsax.eye_slash,
                                         color: HexColor('7E8A97'),
                                       ),
                                     ),
@@ -343,15 +343,12 @@ class _RegisterScreenState extends State<RegisterScreen>
                                       textColor: Colors.white,
                                       text: 'Register',
                                       onTap: () async {
-                                        if (formKey.currentState!
-                                            .validate()) {
-                                          await AuthCubit.get(context)
-                                              .register(
-                                            nameController.text,
-                                            emailController.text,
-                                            passwordController.text,
-                                            context
-                                          );
+                                        if (formKey.currentState!.validate()) {
+                                          await AuthCubit.get(context).register(
+                                              nameController.text,
+                                              emailController.text,
+                                              passwordController.text,
+                                              context);
                                         }
                                       },
                                     );
