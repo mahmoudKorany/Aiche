@@ -85,6 +85,7 @@ void main() async {
   token = await CacheHelper.getData(key: 'token');
   bool? onBoarding = await CacheHelper.getData(key: 'onBoarding');
 
+  //print('Token: $token');
   if (token == null && onBoarding == null) {
     startScreen = const Onboarding();
   } else if (token == null && onBoarding == true) {
