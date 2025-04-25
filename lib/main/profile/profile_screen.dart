@@ -1,7 +1,7 @@
 import 'dart:math' as math;
-import 'package:aiche/auth/models/user_model.dart';
 import 'package:aiche/core/shared/components/components.dart';
 import 'package:aiche/core/shared/components/gaps.dart';
+import 'package:aiche/main/blogs/model/blog_model.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -9,7 +9,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ProfileDetailScreen extends StatefulWidget {
-  final UserModel userModel;
+  final User userModel;
 
   const ProfileDetailScreen({
     super.key,
@@ -299,7 +299,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                                                     fit: BoxFit.cover,
                                                     placeholder:
                                                         (context, url) =>
-                                                            Center(
+                                                            const Center(
                                                       child:
                                                           CircularProgressIndicator(
                                                         color: Colors.blue,

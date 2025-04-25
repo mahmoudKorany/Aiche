@@ -42,12 +42,14 @@ class User {
   String? bio;
   String? phone;
   String? linkedInLink;
+  String? createdAt;
 
   User(
       {this.id,
         this.name,
         this.title,
-      this.imageUrl,this.linkedInLink,this.phone,this.bio});
+      this.imageUrl,this.linkedInLink,this.phone,this.bio,
+      this.createdAt});
 
   User.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -55,8 +57,9 @@ class User {
     title = json['title'];
     imageUrl = json['image'];
     bio = json['bio'];
-    phone = json['phone '];
+    phone = json['phone'];
     linkedInLink = json['linkedin'];
+    createdAt = json['created_at'];
   }
 
   Map<String, dynamic> toJson() {
@@ -68,6 +71,7 @@ class User {
     data['bio'] = bio;
     data['phone'] = phone;
     data['linkedin'] = linkedInLink;
+    data['created_at'] = createdAt;
     return data;
   }
 }

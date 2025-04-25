@@ -3,6 +3,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../events_model/event_model.dart' as event_models;
 
@@ -76,9 +78,9 @@ class EventDetailsScreen extends StatelessWidget {
                     radius: 18.r,
                     child: IconButton(
                       icon:
-                          Icon(Iconsax.share, color: Colors.black, size: 18.sp),
+                          Icon(Icons.share, color: Colors.black, size: 18.sp),
                       onPressed: () {
-                        // Implement share functionality
+                        _shareEvent(context);
                       },
                     ),
                   ),
@@ -91,6 +93,19 @@ class EventDetailsScreen extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      // Status & Category Tags
+                      if (eventModel.status != null || eventModel.category != null)
+                        Wrap(
+                          spacing: 8.w,
+                          children: [
+                            if (eventModel.status != null)
+                              _buildTag(eventModel.status!, Colors.blue),
+                            if (eventModel.category != null)
+                              _buildTag(eventModel.category!, _getTagColor(eventModel.category!)),
+                          ],
+                        ),
+                      SizedBox(height: 16.h),
+                      
                       // Event Images Gallery
                       if (eventModel.image != null &&
                           eventModel.image!.length > 1)
@@ -180,13 +195,42 @@ class EventDetailsScreen extends StatelessWidget {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                _buildInfoItem(Icons.calendar_today,
-                                    eventModel.startDate ?? ''),
-                                _buildInfoItem(
+                                Expanded(
+                                  child: _buildInfoItem(Icons.calendar_today,
+                                    _formatDateRange(eventModel.startDate, eventModel.endDate)),
+                                ),
+                                SizedBox(width: 12.w),
+                                Expanded(
+                                  child: _buildInfoItem(
                                     Icons.location_on, eventModel.place ?? ''),
+                                ),
                               ],
                             ),
-                            SizedBox(height: 16.h),
+                            if (eventModel.facebookLink != null && eventModel.facebookLink!.isNotEmpty)
+                              Padding(
+                                padding: EdgeInsets.only(top: 16.h),
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  child: OutlinedButton.icon(
+                                    icon: Icon(Icons.facebook, color: Colors.white, size: 20.sp),
+                                    label: Text(
+                                      'View on Facebook',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 14.sp,
+                                      ),
+                                    ),
+                                    style: OutlinedButton.styleFrom(
+                                      side: BorderSide(color: Colors.white.withOpacity(0.3)),
+                                      padding: EdgeInsets.symmetric(vertical: 12.h),
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(8.r),
+                                      ),
+                                    ),
+                                    onPressed: () => _launchUrl(eventModel.facebookLink),
+                                  ),
+                                ),
+                              ),
                           ],
                         ),
                       ),
@@ -213,30 +257,32 @@ class EventDetailsScreen extends StatelessWidget {
 
                       SizedBox(height: 32.h),
 
-                      // Register Button
-                      SizedBox(
-                        width: double.infinity,
-                        height: 56.h,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            // Implement registration logic
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16.r),
+                      // Register Button - only show if formLink is available
+                      if (eventModel.formLink != null && eventModel.formLink!.isNotEmpty)
+                        SizedBox(
+                          width: double.infinity,
+                          height: 56.h,
+                          child: ElevatedButton(
+                            onPressed: () {
+                              _launchUrl(eventModel.formLink);
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF1E88E5),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16.r),
+                              ),
+                              elevation: 8,
                             ),
-                          ),
-                          child: Text(
-                            'Register Now',
-                            style: TextStyle(
-                              fontSize: 18.sp,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                            child: Text(
+                              'Register Now',
+                              style: TextStyle(
+                                fontSize: 18.sp,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
                         ),
-                      ),
                       SizedBox(height: 24.h),
                     ],
                   ),
@@ -267,14 +313,37 @@ class EventDetailsScreen extends StatelessWidget {
       children: [
         Icon(icon, color: Colors.white.withOpacity(0.7), size: 20.sp),
         SizedBox(width: 8.w),
-        Text(
-          text,
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.9),
-            fontSize: 14.sp,
+        Flexible(
+          child: Text(
+            text,
+            style: TextStyle(
+              color: Colors.white.withOpacity(0.9),
+              fontSize: 14.sp,
+            ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildTag(String text, Color color) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: color.withOpacity(0.5)),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          color: Colors.white,
+          fontSize: 12.sp,
+          fontWeight: FontWeight.w500,
+        ),
+      ),
     );
   }
 
@@ -286,9 +355,36 @@ class EventDetailsScreen extends StatelessWidget {
         return Colors.purple;
       case 'social':
         return Colors.green;
+      case 'academic':
+        return Colors.amber;
       default:
         return Colors.orange;
     }
+  }
+
+  String _formatDateRange(String? start, String? end) {
+    if (start == null) return 'TBA';
+    if (end == null || start == end) return start;
+    return '$start - $end';
+  }
+
+  Future<void> _launchUrl(String? url) async {
+    if (url == null || url.isEmpty) return;
+    
+    final Uri uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  void _shareEvent(BuildContext context) {
+    final String text = 'Check out this event: ${eventModel.title}\n'
+        '${eventModel.description?.substring(0, eventModel.description!.length > 100 ? 100 : eventModel.description!.length)}...\n'
+        'Date: ${_formatDateRange(eventModel.startDate, eventModel.endDate)}\n'
+        'Location: ${eventModel.place}\n\n'
+        '${eventModel.formLink != null ? 'Register here: ${eventModel.formLink}' : ''}';
+
+    Share.share(text);
   }
 }
 
