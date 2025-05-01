@@ -4,7 +4,6 @@ import 'package:aiche/core/shared/constants/constants.dart';
 import 'package:aiche/main/home/home_screen/home_layout_screen.dart';
 import 'package:aiche/welcome_screens/onboarding_screen/onboarding.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
-//import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
