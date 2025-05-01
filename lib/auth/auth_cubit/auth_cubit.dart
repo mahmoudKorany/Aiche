@@ -9,6 +9,7 @@ import 'package:aiche/core/shared/constants/url_constants.dart';
 import 'package:aiche/core/shared/functions/functions.dart';
 import 'package:aiche/core/utils/cache-helper/cache-helper.dart';
 import 'package:aiche/main/blogs/blogs_cubit/blogs_cubit.dart';
+import 'package:aiche/main/committee/cubit/committee_cubit.dart';
 import 'package:aiche/main/events/events_cubit/events_cubit.dart';
 import 'package:aiche/main/home/home_cubit/layout_cubit.dart';
 import 'package:aiche/main/home/home_screen/home_layout_screen.dart';
@@ -60,6 +61,7 @@ class AuthCubit extends Cubit<AuthState> {
           await EventsCubit.get(context).fetchEvents();
           await ShopCubit.get(context).getAllCollections();
           await ShopCubit.get(context).getAllProducts();
+          await CommitteeCubit.get(context).getCommitteeData();
           emit(AuthSuccess());
           await getUserData();
           navigateAndFinish(context: context, widget: HomeLayoutScreen());
@@ -108,6 +110,7 @@ class AuthCubit extends Cubit<AuthState> {
       await ShopCubit.get(context).getAllProducts();
       await getUserData();
       await EventsCubit.get(context).fetchEvents();
+      await CommitteeCubit.get(context).getCommitteeData();
       navigateAndFinish(
         context: context,
         widget: const HomeLayoutScreen(),

@@ -1,3 +1,4 @@
+import 'package:aiche/core/shared/components/gaps.dart';
 import 'package:aiche/core/shared/functions/functions.dart';
 import 'package:aiche/main/home/home_component/drawer_icon.dart';
 import 'package:aiche/main/shop/Model/collection_model.dart';
@@ -8,7 +9,9 @@ import 'package:aiche/main/shop/shop_screen/collection_details_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/shared/components/components.dart';
+import '../../blogs/blog_details/blog_details_screen.dart';
 
 class ShopScreen extends StatefulWidget {
   const ShopScreen({super.key});
@@ -23,6 +26,239 @@ class _ShopScreenState extends State<ShopScreen> {
     super.initState();
   }
 
+  void _showProductDetails(BuildContext context, ProductModel product) {
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) => Container(
+        height: screenHeight * 0.7,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1F2937),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.3),
+              blurRadius: 10,
+              offset: const Offset(0, -2),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Close handle
+            Center(
+              child: Container(
+                margin: EdgeInsets.only(top: screenHeight * 0.015),
+                width: screenWidth * 0.1,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.3),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
+
+            // Product image
+            Hero(
+              tag: 'product_image_${product.id}',
+              child: Container(
+                height: screenHeight * 0.3,
+                width: double.infinity,
+                margin: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.05,
+                  vertical: screenHeight * 0.02,
+                ),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.2),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: CachedNetworkImage(
+                    imageUrl:  product.image ?? 'https://via.placeholder.com/150',
+                    fit: BoxFit.cover,
+                    errorWidget: (context, error, stackTrace) => Container(
+                      color: Colors.grey[700],
+                      child: Icon(
+                        Icons.image_not_supported,
+                        size: screenWidth * 0.15,
+                        color: Colors.white54,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // Product details
+            Expanded(
+              child: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(
+                  horizontal: screenWidth * 0.05,
+                  vertical: screenHeight * 0.02,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Product name
+                    Text(
+                      product.name ?? 'Product',
+                      style: TextStyle(
+                        fontSize: screenWidth < 600 ? 22 : 26,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+
+                    SizedBox(height: screenHeight * 0.02),
+
+                    // Price section
+                    Container(
+                      padding: EdgeInsets.all(screenWidth * 0.04),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.attach_money,
+                            color: Colors.greenAccent,
+                            size: screenWidth < 600 ? 24 : 28,
+                          ),
+                          Text(
+                            '${product.price ?? "0"} EGP',
+                            style: TextStyle(
+                              fontSize: screenWidth < 600 ? 22 : 26,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    SizedBox(height: screenHeight * 0.02),
+
+                    // Created date
+                    if (product.createdAt != null)
+                      Container(
+                        padding: EdgeInsets.all(screenWidth * 0.04),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.calendar_today,
+                              color: Colors.white70,
+                              size: screenWidth < 600 ? 20 : 24,
+                            ),
+                            SizedBox(width: screenWidth * 0.02),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Added on',
+                                    style: TextStyle(
+                                      fontSize: screenWidth < 600 ? 14 : 16,
+                                      color: Colors.white70,
+                                    ),
+                                  ),
+                                  Text(
+                                    formatDate(product.createdAt!),
+                                    style: TextStyle(
+                                      fontSize: screenWidth < 600 ? 16 : 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                    // Link section if available
+                    if (product.link != null && product.link!.isNotEmpty)
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(height: screenHeight * 0.02),
+                          GestureDetector(
+                            onTap: () {
+                              // Open the link in a web view or browser
+                              launchUrl(Uri.parse(product.link??''));
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(screenWidth * 0.04),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.link,
+                                    color: Colors.white70,
+                                    size: screenWidth < 600 ? 20 : 24,
+                                  ),
+                                  SizedBox(width: screenWidth * 0.02),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Product Link',
+                                          style: TextStyle(
+                                            fontSize: screenWidth < 600 ? 14 : 16,
+                                            color: Colors.white70,
+                                          ),
+                                        ),
+                                        Text(
+                                          product.link??'',
+                                          style: TextStyle(
+                                            fontSize: screenWidth < 600 ? 16 : 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.blue[300],
+                                            decoration: TextDecoration.underline,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<ShopCubit, ShopState>(
@@ -259,7 +495,7 @@ class _ShopScreenState extends State<ShopScreen> {
                                 size: 14,
                               ),
                               Text(
-                                '${collection.total ?? '0'}',
+                                collection.total ?? '0',
                                 style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
@@ -324,136 +560,141 @@ class _ShopScreenState extends State<ShopScreen> {
       itemCount: products.length,
       itemBuilder: (context, index) {
         final product = products[index];
-        return Container(
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.15),
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Product image with gradient overlay
-              Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius:
-                        const BorderRadius.vertical(top: Radius.circular(12)),
-                    child: CachedNetworkImage(
-                      imageUrl:
-                          product.image ?? 'https://via.placeholder.com/150',
-                      height: screenWidth < 600 ? 130 : screenWidth * 0.16,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      errorWidget: (context, error, stackTrace) => Container(
+        return GestureDetector(
+          onTap: (){
+           _showProductDetails(context, product);
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.15),
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Product image with gradient overlay
+                Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius:
+                          const BorderRadius.vertical(top: Radius.circular(12)),
+                      child: CachedNetworkImage(
+                        imageUrl:
+                            product.image ?? 'https://via.placeholder.com/150',
                         height: screenWidth < 600 ? 130 : screenWidth * 0.16,
-                        color: Colors.grey[300],
-                        child: Icon(Icons.image_not_supported,
-                            size: screenWidth < 600 ? 40 : 50),
-                      ),
-                    ),
-                  ),
-                  // Subtle gradient overlay for better text readability
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    child: Container(
-                      height: 40,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black.withOpacity(0.3),
-                          ],
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorWidget: (context, error, stackTrace) => Container(
+                          height: screenWidth < 600 ? 130 : screenWidth * 0.16,
+                          color: Colors.grey[300],
+                          child: Icon(Icons.image_not_supported,
+                              size: screenWidth < 600 ? 40 : 50),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.all(screenWidth * 0.025),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            product.name ?? 'Product',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              fontSize: screenWidth < 600 ? 14 : 16,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          SizedBox(
-                              height:
-                                  MediaQuery.of(context).size.height * 0.005),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.attach_money,
-                                color: Colors.greenAccent,
-                                size: screenWidth < 600 ? 16 : 18,
-                              ),
-                              Text(
-                                '${product.price ?? '0'} EGP',
-                                style: TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: screenWidth < 600 ? 14 : 16,
-                                ),
-                              ),
+                    // Subtle gradient overlay for better text readability
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      child: Container(
+                        height: 40,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              Colors.transparent,
+                              Colors.black.withOpacity(0.3),
                             ],
                           ),
-                        ],
+                        ),
                       ),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton.icon(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF2E86C1),
-                            foregroundColor: Colors.white,
-                            padding: EdgeInsets.symmetric(
-                              vertical: screenWidth < 600 ? 8 : 12,
+                    ),
+                  ],
+                ),
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.all(screenWidth * 0.025),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              product.name ?? 'Product',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                fontSize: screenWidth < 600 ? 14 : 16,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                            SizedBox(
+                                height:
+                                    MediaQuery.of(context).size.height * 0.005),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.attach_money,
+                                  color: Colors.greenAccent,
+                                  size: screenWidth < 600 ? 16 : 18,
+                                ),
+                                Text(
+                                  '${product.price ?? '0'} EGP',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: screenWidth < 600 ? 14 : 16,
+                                  ),
+                                ),
+                              ],
                             ),
-                            elevation: 2,
-                          ),
-                          onPressed: () {
-                            _showPhoneInputBottomSheet(context, product);
-                          },
-                          icon: const Icon(Icons.shopping_cart),
-                          label: Text(
-                            'Order',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: screenWidth < 600 ? 12 : 14,
+                          ],
+                        ),
+                        SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF2E86C1),
+                              foregroundColor: Colors.white,
+                              padding: EdgeInsets.symmetric(
+                                vertical: screenWidth < 600 ? 8 : 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              elevation: 2,
+                            ),
+                            onPressed: () {
+                              _showPhoneInputBottomSheet(context, product);
+                            },
+                            icon: const Icon(Icons.shopping_cart),
+                            label: Text(
+                              'Order',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: screenWidth < 600 ? 12 : 14,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         );
       },
@@ -506,7 +747,7 @@ class _ShopScreenState extends State<ShopScreen> {
                     fontSize: screenWidth < 600 ? 20 : 24,
                   ),
                 ),
-                SizedBox(height: 8),
+                const Gap10(),
                 // Product being ordered
                 Text(
                   'Product: ${product.name}',
@@ -515,7 +756,7 @@ class _ShopScreenState extends State<ShopScreen> {
                     fontSize: screenWidth < 600 ? 16 : 18,
                   ),
                 ),
-                SizedBox(height: 4),
+                const Gap5(),
                 // Price
                 Text(
                   'Price: ${product.price ?? "0"} EGP',
@@ -524,12 +765,12 @@ class _ShopScreenState extends State<ShopScreen> {
                     fontSize: screenWidth < 600 ? 14 : 16,
                   ),
                 ),
-                SizedBox(height: 20),
+                const Gap20(),
                 // Phone Field
                 TextFormField(
                   controller: phoneController,
                   keyboardType: TextInputType.phone,
-                  style: TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
                     labelText: 'Phone Number',
                     labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
@@ -564,7 +805,7 @@ class _ShopScreenState extends State<ShopScreen> {
                     return null;
                   },
                 ),
-                SizedBox(height: 20),
+                const Gap20(),
                 // Submit Button
                 SizedBox(
                   width: double.infinity,

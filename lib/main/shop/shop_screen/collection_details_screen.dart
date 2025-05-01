@@ -1,5 +1,6 @@
 import 'package:aiche/core/shared/components/components.dart';
 import 'package:aiche/core/shared/components/gaps.dart';
+import 'package:aiche/main/blogs/blog_details/blog_details_screen.dart';
 import 'package:aiche/main/shop/Model/collection_model.dart';
 import 'package:aiche/main/shop/shop_cubit/shop_cubit.dart';
 import 'package:aiche/main/shop/shop_cubit/shop_state.dart';
@@ -9,6 +10,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:ui';
 import 'package:share_plus/share_plus.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CollectionDetailsScreen extends StatefulWidget {
   final CollectionModel collection;
@@ -595,12 +597,12 @@ class _CollectionDetailsScreenState extends State<CollectionDetailsScreen>
                     child: ClipRRect(
                       borderRadius:
                           const BorderRadius.vertical(top: Radius.circular(12)),
-                      child: Image.network(
-                        product.image ?? 'https://via.placeholder.com/150',
+                      child: CachedNetworkImage(
+                      imageUrl: product.image ?? 'https://via.placeholder.com/150',
                         height: screenWidth < 600 ? 120 : screenWidth * 0.15,
                         width: double.infinity,
                         fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) => Container(
+                        errorWidget: (context, error, stackTrace) => Container(
                           height: screenWidth < 600 ? 120 : screenWidth * 0.15,
                           color: Colors.grey[300],
                           child: Icon(Icons.image_not_supported,
@@ -747,10 +749,10 @@ class _CollectionDetailsScreenState extends State<CollectionDetailsScreen>
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
-                  child: Image.network(
-                    product.image ?? 'https://via.placeholder.com/150',
+                  child: CachedNetworkImage(
+                   imageUrl:  product.image ?? 'https://via.placeholder.com/150',
                     fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
+                    errorWidget: (context, error, stackTrace) => Container(
                       color: Colors.grey[700],
                       child: Icon(
                         Icons.image_not_supported,
@@ -841,7 +843,7 @@ class _CollectionDetailsScreenState extends State<CollectionDetailsScreen>
                                     ),
                                   ),
                                   Text(
-                                    product.createdAt!,
+                                    formatDate(product.createdAt!),
                                     style: TextStyle(
                                       fontSize: screenWidth < 600 ? 16 : 18,
                                       fontWeight: FontWeight.bold,
@@ -861,47 +863,53 @@ class _CollectionDetailsScreenState extends State<CollectionDetailsScreen>
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           SizedBox(height: screenHeight * 0.02),
-                          Container(
-                            padding: EdgeInsets.all(screenWidth * 0.04),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.link,
-                                  color: Colors.white70,
-                                  size: screenWidth < 600 ? 20 : 24,
-                                ),
-                                SizedBox(width: screenWidth * 0.02),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Product Link',
-                                        style: TextStyle(
-                                          fontSize: screenWidth < 600 ? 14 : 16,
-                                          color: Colors.white70,
-                                        ),
-                                      ),
-                                      Text(
-                                        product.link!,
-                                        style: TextStyle(
-                                          fontSize: screenWidth < 600 ? 16 : 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.blue[300],
-                                          decoration: TextDecoration.underline,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
+                          GestureDetector(
+                            onTap: () {
+                              // Open the link in a web view or browser
+                              launchUrl(Uri.parse(product.link??''));
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(screenWidth * 0.04),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.link,
+                                    color: Colors.white70,
+                                    size: screenWidth < 600 ? 20 : 24,
                                   ),
-                                ),
-                              ],
+                                  SizedBox(width: screenWidth * 0.02),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Product Link',
+                                          style: TextStyle(
+                                            fontSize: screenWidth < 600 ? 14 : 16,
+                                            color: Colors.white70,
+                                          ),
+                                        ),
+                                        Text(
+                                          product.link!,
+                                          style: TextStyle(
+                                            fontSize: screenWidth < 600 ? 16 : 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.blue[300],
+                                            decoration: TextDecoration.underline,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ),
                         ],

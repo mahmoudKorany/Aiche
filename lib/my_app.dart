@@ -1,6 +1,7 @@
 import 'package:aiche/auth/auth_cubit/auth_cubit.dart';
 import 'package:aiche/core/shared/constants/constants.dart';
 import 'package:aiche/main/blogs/blogs_cubit/blogs_cubit.dart';
+import 'package:aiche/main/committee/cubit/committee_cubit.dart';
 import 'package:aiche/main/events/events_cubit/events_cubit.dart';
 import 'package:aiche/main/home/home_cubit/layout_cubit.dart';
 import 'package:aiche/main/shop/shop_cubit/shop_cubit.dart';
@@ -45,6 +46,9 @@ class _MyAppState extends State<MyApp> {
         ),
         BlocProvider(
           create: (context) => AuthCubit()..getUserData(),
+        ),
+        BlocProvider(
+          create: (context) => CommitteeCubit()..getCommitteeData(),
         ),
       ],
       child: ScreenUtilInit(

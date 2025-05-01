@@ -500,16 +500,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                                   );
                                 },
                               ),
-                              // Creation Date
-                              _buildAnimatedInfoCard(
-                                title: "Member Since",
-                                content: widget.userModel.createdAt?.isEmpty ??
-                                        true
-                                    ? "Unknown"
-                                    : _formatDate(widget.userModel.createdAt!),
-                                icon: Icons.calendar_today,
-                                delay: 0.3,
-                              ),
+                              // Creation Dat
 
                               // // Last Updated
                               // _buildAnimatedInfoCard(

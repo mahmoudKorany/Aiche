@@ -1,4 +1,9 @@
+import 'package:aiche/core/shared/components/components.dart';
+import 'package:aiche/main/committee/cubit/committee_cubit.dart';
+import 'package:aiche/main/committee/cubit/committee_states.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hexcolor/hexcolor.dart';
 
@@ -7,49 +12,62 @@ class CommitteesCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 170.0.h,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: 5,
-        itemBuilder: (context, index) {
-          return Container(
-            margin: EdgeInsets.only(right: 10.0.w),
-            width: 150.0.w,
-            decoration: BoxDecoration(
-              color: HexColor('03172C'),
-              borderRadius: BorderRadius.circular(15.0.r),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                CircleAvatar(
-                  radius: 50.0.r,
-                  backgroundImage:
-                      const AssetImage('assets/images/committee.jpg'),
+    return BlocConsumer<CommitteeCubit, CommitteeState>(
+      listener: (context, state) {},
+      builder: (context, state) {
+        var cubit = CommitteeCubit.get(context);
+        return SizedBox(
+          height: 170.0.h,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: cubit.committeeList.length,
+            itemBuilder: (context, index) {
+              return Container(
+                margin: EdgeInsets.only(right: 10.0.w),
+                width: 150.0.w,
+                decoration: BoxDecoration(
+                  color: HexColor('03172C'),
+                  borderRadius: BorderRadius.circular(15.0.r),
                 ),
-                SizedBox(height: 10.0.h),
-                Text(
-                  'Committee Name',
-                  style: TextStyle(
-                    fontSize: 16.0.sp,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CircleAvatar(
+                      radius: 50.0.r,
+                      child: CachedNetworkImage(
+                        imageUrl: cubit.committeeList[index].img??'',
+                        placeholder: (context, url) => loading(),
+                        errorWidget: (context, url, error) => Icon(
+                          Icons.error,
+                          size: 50.0.r,
+                          color: Colors.red,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 10.0.h),
+                    Text(
+                       cubit.committeeList[index].name ?? '',
+                      style: TextStyle(
+                        fontSize: 16.0.sp,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    // SizedBox(height: 5.0.h),
+                    // Text(
+                    //   cubit.committeeList[index].description ?? '',
+                    //   style: TextStyle(
+                    //     fontSize: 14.0.sp,
+                    //     color: Colors.grey,
+                    //   ),
+                    // ),
+                  ],
                 ),
-                SizedBox(height: 5.0.h),
-                Text(
-                  'Description',
-                  style: TextStyle(
-                    fontSize: 14.0.sp,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 }

@@ -25,9 +25,7 @@ class UrlConstants {
   static String getAwardDetailsbyId({required String id}) => 'awards/$id';
 
   ///committees
-  static const String getCommitties = 'committees';
-  static String getCommitteeDetailsbyId({required String id}) =>
-      'committees/$id';
+  static const String getCommittees = 'committees';
 
   ///Tasks
   static String getTasks(String committeeId) => 'committees/$committeeId/tasks';
