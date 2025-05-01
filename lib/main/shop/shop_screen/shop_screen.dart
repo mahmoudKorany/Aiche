@@ -192,9 +192,12 @@ class _ShopScreenState extends State<ShopScreen> {
           return GestureDetector(
             onTap: () {
               // Navigate to the collection details screen
-              navigateTo(context: context, widget: CollectionDetailsScreen(
-                collection: collection,
-              ),);
+              navigateTo(
+                context: context,
+                widget: CollectionDetailsScreen(
+                  collection: collection,
+                ),
+              );
             },
             child: Container(
               width: itemWidth,
@@ -220,7 +223,8 @@ class _ShopScreenState extends State<ShopScreen> {
                         borderRadius: const BorderRadius.vertical(
                             top: Radius.circular(12)),
                         child: CachedNetworkImage(
-                         imageUrl:  collection.image ?? 'https://via.placeholder.com/150',
+                          imageUrl: collection.image ??
+                              'https://via.placeholder.com/150',
                           height: itemHeight * 0.65, // 65% of the item height
                           width: double.infinity,
                           fit: BoxFit.cover,
@@ -342,7 +346,8 @@ class _ShopScreenState extends State<ShopScreen> {
                     borderRadius:
                         const BorderRadius.vertical(top: Radius.circular(12)),
                     child: CachedNetworkImage(
-                     imageUrl:  product.image ?? 'https://via.placeholder.com/150',
+                      imageUrl:
+                          product.image ?? 'https://via.placeholder.com/150',
                       height: screenWidth < 600 ? 130 : screenWidth * 0.16,
                       width: double.infinity,
                       fit: BoxFit.cover,
@@ -461,7 +466,7 @@ class _ShopScreenState extends State<ShopScreen> {
     final phoneController = TextEditingController();
     final formKey = GlobalKey<FormState>();
     final shopCubit = ShopCubit.get(context);
-    
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -530,10 +535,12 @@ class _ShopScreenState extends State<ShopScreen> {
                     labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
                     hintText: 'Enter your phone number',
                     hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
-                    prefixIcon: Icon(Icons.phone, color: Colors.white.withOpacity(0.7)),
+                    prefixIcon:
+                        Icon(Icons.phone, color: Colors.white.withOpacity(0.7)),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+                      borderSide:
+                          BorderSide(color: Colors.white.withOpacity(0.3)),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),

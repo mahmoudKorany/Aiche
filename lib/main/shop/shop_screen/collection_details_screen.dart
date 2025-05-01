@@ -1160,10 +1160,12 @@ class _CollectionDetailsScreenState extends State<CollectionDetailsScreen>
                     labelStyle: TextStyle(color: Colors.white.withOpacity(0.7)),
                     hintText: 'Enter your phone number',
                     hintStyle: TextStyle(color: Colors.white.withOpacity(0.4)),
-                    prefixIcon: Icon(Icons.phone, color: Colors.white.withOpacity(0.7)),
+                    prefixIcon:
+                        Icon(Icons.phone, color: Colors.white.withOpacity(0.7)),
                     enabledBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+                      borderSide:
+                          BorderSide(color: Colors.white.withOpacity(0.3)),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -1208,13 +1210,14 @@ class _CollectionDetailsScreenState extends State<CollectionDetailsScreen>
                         // Place order using the collection ID and phone number
                         if (widget.collection.id != null) {
                           shopCubit.placeCollectionOrder(
-                            collectionId: widget.collection.id ??0,
+                            collectionId: widget.collection.id ?? 0,
                             phone: phoneController.text,
                           );
                           Navigator.pop(context);
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text('Order placed for ${widget.collection.name}'),
+                              content: Text(
+                                  'Order placed for ${widget.collection.name}'),
                               backgroundColor: Colors.green,
                               behavior: SnackBarBehavior.floating,
                             ),

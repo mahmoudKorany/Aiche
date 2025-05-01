@@ -2,7 +2,7 @@ class UrlConstants {
   static const String baseUrl =
       'https://aiche.koyeb.app/api/';
 
-  ///user
+  //user
 
   static const String login = 'login';
   static const String register = 'register';
