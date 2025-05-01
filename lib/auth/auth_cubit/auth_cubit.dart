@@ -12,6 +12,7 @@ import 'package:aiche/main/blogs/blogs_cubit/blogs_cubit.dart';
 import 'package:aiche/main/events/events_cubit/events_cubit.dart';
 import 'package:aiche/main/home/home_cubit/layout_cubit.dart';
 import 'package:aiche/main/home/home_screen/home_layout_screen.dart';
+import 'package:aiche/main/shop/shop_cubit/shop_cubit.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -57,6 +58,8 @@ class AuthCubit extends Cubit<AuthState> {
           await LayoutCubit.get(context).getAwards();
           await LayoutCubit.get(context).getMaterial();
           await EventsCubit.get(context).fetchEvents();
+          await ShopCubit.get(context).getAllCollections();
+          await ShopCubit.get(context).getAllProducts();
           emit(AuthSuccess());
           await getUserData();
           navigateAndFinish(context: context, widget: HomeLayoutScreen());
@@ -101,6 +104,8 @@ class AuthCubit extends Cubit<AuthState> {
       await LayoutCubit.get(context).getHomeBanner();
       await LayoutCubit.get(context).getAwards();
       await LayoutCubit.get(context).getMaterial();
+      await ShopCubit.get(context).getAllCollections();
+      await ShopCubit.get(context).getAllProducts();
       await getUserData();
       await EventsCubit.get(context).fetchEvents();
       navigateAndFinish(

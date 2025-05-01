@@ -57,4 +57,55 @@ class ShopCubit extends Cubit<ShopState> {
       emit(GetAllCollectionsErrorState(error.toString()));
     }
   }
+
+
+  // Place Order
+  Future<void> placeProductOrder({
+    required int productId,
+    required String phone,
+  }) async {
+    emit(PlaceOrderLoadingState());
+    try {
+      DioHelper.postData(
+        url: UrlConstants.placeProductOrder,
+        token: token,
+        data: {
+          'phone': phone,
+          'product_id': productId,
+        },
+      ).then((value) {
+        print(value.data);
+        emit(PlaceOrderSuccessState());
+      });
+      // Mock data
+      emit(PlaceOrderSuccessState());
+    } catch (error) {
+      emit(PlaceOrderErrorState(error.toString()));
+    }
+  }
+
+  Future<void> placeCollectionOrder({
+    required int collectionId,
+    required String phone,
+  }) async {
+    emit(PlaceOrderLoadingState());
+    try {
+      DioHelper.postData(
+        url: UrlConstants.placeCollectionOrder,
+        token: token,
+        data: {
+          'phone': phone,
+          'collection_id': collectionId,
+        },
+      ).then((value) {
+        // Handle the response if needed
+        print(value.data);
+        emit(PlaceOrderSuccessState());
+      });
+      // Mock data
+      emit(PlaceOrderSuccessState());
+    } catch (error) {
+      emit(PlaceOrderErrorState(error.toString()));
+    }
+  }
 }

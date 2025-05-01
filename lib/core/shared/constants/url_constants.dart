@@ -53,4 +53,6 @@ class UrlConstants {
   //SHOP
   static const String getAllProducts = 'products';
   static const String getAllCollections = 'collections';
+  static const String placeProductOrder = 'products-orders';
+  static const String placeCollectionOrder = 'collections-orders';
 }
