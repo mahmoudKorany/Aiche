@@ -1,6 +1,6 @@
 class UrlConstants {
   static const String baseUrl =
-      'https://backend1.koyeb.app/api/';
+      'https://aiche.koyeb.app/api/';
 
   ///user
 
@@ -48,4 +48,9 @@ class UrlConstants {
 
   // get Material
   static const String getMaterial = 'materials';
+
+
+  //SHOP
+  static const String getAllProducts = 'products';
+  static const String getAllCollections = 'collections';
 }

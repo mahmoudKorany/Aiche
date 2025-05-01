@@ -6,6 +6,7 @@ import 'package:aiche/core/shared/functions/functions.dart';
 import 'package:aiche/main.dart';
 import 'package:aiche/main/blogs/blogs_cubit/blogs_cubit.dart';
 import 'package:aiche/main/shop/shop_cubit/shop_cubit.dart';
+import 'package:aiche/main/shop/shop_cubit/shop_state.dart';
 import 'package:aiche/main/tasks/tasks_cubit/tasks_cubit.dart';
 import 'package:aiche/main/tasks/tasks_cubit/tasks_state.dart';
 import 'package:flutter/material.dart';

@@ -32,7 +32,7 @@ class _MyAppState extends State<MyApp> {
           create: (context) => TasksCubit()..getTasks(),
         ),
         BlocProvider(
-          create: (context) => ShopCubit(),
+          create: (context) => ShopCubit()..getAllProducts()..getAllCollections(),
         ),
         BlocProvider(
           create: (context) => LayoutCubit()..getHomeBanner(),

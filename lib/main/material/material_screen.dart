@@ -296,7 +296,7 @@ class _MaterialScreenState extends State<MaterialScreen>
                                         borderSide: BorderSide.none,
                                       ),
                                       contentPadding: EdgeInsets.symmetric(
-                                        horizontal: isSmallScreen ? 8.w : 12.w,
+                                        horizontal: isSmallScreen ? 4.w : 4.w,
                                         vertical: isSmallScreen ? 6.h : 8.h,
                                       ),
                                     ),
@@ -399,7 +399,6 @@ class _MaterialScreenState extends State<MaterialScreen>
                       ),
 
                       const Gap15(),
-
                       // Materials list with enhanced scrolling and responsiveness
                       Expanded(
                         child: state is LayoutGetMaterialLoading

@@ -1,7 +1,6 @@
 import 'package:aiche/core/shared/components/components.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:iconsax/iconsax.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -77,8 +76,7 @@ class EventDetailsScreen extends StatelessWidget {
                     backgroundColor: Colors.white,
                     radius: 18.r,
                     child: IconButton(
-                      icon:
-                          Icon(Icons.share, color: Colors.black, size: 18.sp),
+                      icon: Icon(Icons.share, color: Colors.black, size: 18.sp),
                       onPressed: () {
                         _shareEvent(context);
                       },
@@ -94,18 +92,20 @@ class EventDetailsScreen extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       // Status & Category Tags
-                      if (eventModel.status != null || eventModel.category != null)
+                      if (eventModel.status != null ||
+                          eventModel.category != null)
                         Wrap(
                           spacing: 8.w,
                           children: [
                             if (eventModel.status != null)
                               _buildTag(eventModel.status!, Colors.blue),
                             if (eventModel.category != null)
-                              _buildTag(eventModel.category!, _getTagColor(eventModel.category!)),
+                              _buildTag(eventModel.category!,
+                                  _getTagColor(eventModel.category!)),
                           ],
                         ),
                       SizedBox(height: 16.h),
-                      
+
                       // Event Images Gallery
                       if (eventModel.image != null &&
                           eventModel.image!.length > 1)
@@ -196,23 +196,27 @@ class EventDetailsScreen extends StatelessWidget {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 Expanded(
-                                  child: _buildInfoItem(Icons.calendar_today,
-                                    _formatDateRange(eventModel.startDate, eventModel.endDate)),
+                                  child: _buildInfoItem(
+                                      Icons.calendar_today,
+                                      _formatDateRange(eventModel.startDate,
+                                          eventModel.endDate)),
                                 ),
                                 SizedBox(width: 12.w),
                                 Expanded(
-                                  child: _buildInfoItem(
-                                    Icons.location_on, eventModel.place ?? ''),
+                                  child: _buildInfoItem(Icons.location_on,
+                                      eventModel.place ?? ''),
                                 ),
                               ],
                             ),
-                            if (eventModel.facebookLink != null && eventModel.facebookLink!.isNotEmpty)
+                            if (eventModel.facebookLink != null &&
+                                eventModel.facebookLink!.isNotEmpty)
                               Padding(
                                 padding: EdgeInsets.only(top: 16.h),
                                 child: SizedBox(
                                   width: double.infinity,
                                   child: OutlinedButton.icon(
-                                    icon: Icon(Icons.facebook, color: Colors.white, size: 20.sp),
+                                    icon: Icon(Icons.facebook,
+                                        color: Colors.white, size: 20.sp),
                                     label: Text(
                                       'View on Facebook',
                                       style: TextStyle(
@@ -221,13 +225,17 @@ class EventDetailsScreen extends StatelessWidget {
                                       ),
                                     ),
                                     style: OutlinedButton.styleFrom(
-                                      side: BorderSide(color: Colors.white.withOpacity(0.3)),
-                                      padding: EdgeInsets.symmetric(vertical: 12.h),
+                                      side: BorderSide(
+                                          color: Colors.white.withOpacity(0.3)),
+                                      padding:
+                                          EdgeInsets.symmetric(vertical: 12.h),
                                       shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(8.r),
+                                        borderRadius:
+                                            BorderRadius.circular(8.r),
                                       ),
                                     ),
-                                    onPressed: () => _launchUrl(eventModel.facebookLink),
+                                    onPressed: () =>
+                                        _launchUrl(eventModel.facebookLink),
                                   ),
                                 ),
                               ),
@@ -258,7 +266,8 @@ class EventDetailsScreen extends StatelessWidget {
                       SizedBox(height: 32.h),
 
                       // Register Button - only show if formLink is available
-                      if (eventModel.formLink != null && eventModel.formLink!.isNotEmpty)
+                      if (eventModel.formLink != null &&
+                          eventModel.formLink!.isNotEmpty)
                         SizedBox(
                           width: double.infinity,
                           height: 56.h,
@@ -370,7 +379,7 @@ class EventDetailsScreen extends StatelessWidget {
 
   Future<void> _launchUrl(String? url) async {
     if (url == null || url.isEmpty) return;
-    
+
     final Uri uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
