@@ -9,6 +9,7 @@ import 'package:aiche/main/shop/shop_screen/collection_details_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/shared/components/components.dart';
 import '../../blogs/blog_details/blog_details_screen.dart';
@@ -86,7 +87,8 @@ class _ShopScreenState extends State<ShopScreen> {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
                   child: CachedNetworkImage(
-                    imageUrl:  product.image ?? 'https://via.placeholder.com/150',
+                    imageUrl:
+                        product.image ?? 'https://via.placeholder.com/150',
                     fit: BoxFit.cover,
                     errorWidget: (context, error, stackTrace) => Container(
                       color: Colors.grey[700],
@@ -94,6 +96,15 @@ class _ShopScreenState extends State<ShopScreen> {
                         Icons.image_not_supported,
                         size: screenWidth * 0.15,
                         color: Colors.white54,
+                      ),
+                    ),
+                    placeholder: (context, url) => Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: Container(
+                        color: Colors.white,
+                        height: screenHeight * 0.3,
+                        width: double.infinity,
                       ),
                     ),
                   ),
@@ -202,7 +213,7 @@ class _ShopScreenState extends State<ShopScreen> {
                           GestureDetector(
                             onTap: () {
                               // Open the link in a web view or browser
-                              launchUrl(Uri.parse(product.link??''));
+                              launchUrl(Uri.parse(product.link ?? ''));
                             },
                             child: Container(
                               padding: EdgeInsets.all(screenWidth * 0.04),
@@ -221,22 +232,25 @@ class _ShopScreenState extends State<ShopScreen> {
                                   Expanded(
                                     child: Column(
                                       crossAxisAlignment:
-                                      CrossAxisAlignment.start,
+                                          CrossAxisAlignment.start,
                                       children: [
                                         Text(
                                           'Product Link',
                                           style: TextStyle(
-                                            fontSize: screenWidth < 600 ? 14 : 16,
+                                            fontSize:
+                                                screenWidth < 600 ? 14 : 16,
                                             color: Colors.white70,
                                           ),
                                         ),
                                         Text(
-                                          product.link??'',
+                                          product.link ?? '',
                                           style: TextStyle(
-                                            fontSize: screenWidth < 600 ? 16 : 18,
+                                            fontSize:
+                                                screenWidth < 600 ? 16 : 18,
                                             fontWeight: FontWeight.bold,
                                             color: Colors.blue[300],
-                                            decoration: TextDecoration.underline,
+                                            decoration:
+                                                TextDecoration.underline,
                                           ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
@@ -259,6 +273,7 @@ class _ShopScreenState extends State<ShopScreen> {
       ),
     );
   }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<ShopCubit, ShopState>(
@@ -461,7 +476,8 @@ class _ShopScreenState extends State<ShopScreen> {
                         child: CachedNetworkImage(
                           imageUrl: collection.image ??
                               'https://via.placeholder.com/150',
-                          height: itemHeight * 0.65, // 65% of the item height
+                          height: itemHeight * 0.65,
+                          // 65% of the item height
                           width: double.infinity,
                           fit: BoxFit.cover,
                           errorWidget: (context, error, stackTrace) =>
@@ -470,6 +486,77 @@ class _ShopScreenState extends State<ShopScreen> {
                             color: Colors.grey[300],
                             child: Icon(Icons.image_not_supported,
                                 size: screenWidth < 600 ? 40 : 50),
+                          ),
+                          placeholder: (context, url) => Shimmer.fromColors(
+                            baseColor: Colors.grey[300]!,
+                            highlightColor: Colors.grey[100]!,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Image placeholder
+                                Container(
+                                  height: itemHeight * 0.65,
+                                  decoration: const BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                                // Content placeholders
+                                Expanded(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceEvenly,
+                                      children: [
+                                        // Title placeholder
+                                        Container(
+                                          height: 12,
+                                          width: double.infinity,
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        // Subtitle placeholder
+                                        Container(
+                                          height: 10,
+                                          width: MediaQuery.of(context)
+                                                  .size
+                                                  .width *
+                                              0.2,
+                                          decoration: BoxDecoration(
+                                            color: Colors.white,
+                                            borderRadius:
+                                                BorderRadius.circular(4),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        // Price badge placeholder
+                                        Align(
+                                          alignment: Alignment.centerRight,
+                                          child: Container(
+                                            height: 16,
+                                            width: 60,
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -561,8 +648,8 @@ class _ShopScreenState extends State<ShopScreen> {
       itemBuilder: (context, index) {
         final product = products[index];
         return GestureDetector(
-          onTap: (){
-           _showProductDetails(context, product);
+          onTap: () {
+            _showProductDetails(context, product);
           },
           child: Container(
             decoration: BoxDecoration(
@@ -596,6 +683,91 @@ class _ShopScreenState extends State<ShopScreen> {
                           color: Colors.grey[300],
                           child: Icon(Icons.image_not_supported,
                               size: screenWidth < 600 ? 40 : 50),
+                        ),
+                        placeholder: (context, url) => Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Image placeholder
+                              Container(
+                                height: screenWidth < 600
+                                    ? 130
+                                    : screenWidth * 0.16,
+                                decoration: const BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(12),
+                                  ),
+                                ),
+                              ),
+                              // Content placeholders
+                              Expanded(
+                                child: Padding(
+                                  padding: EdgeInsets.all(screenWidth * 0.025),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          // Title placeholder
+                                          Container(
+                                            height: 14,
+                                            width: double.infinity,
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(4),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          // Price placeholder
+                                          Row(
+                                            children: [
+                                              Container(
+                                                height: 16,
+                                                width: 16,
+                                                decoration: const BoxDecoration(
+                                                  color: Colors.white,
+                                                  shape: BoxShape.circle,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 4),
+                                              Container(
+                                                height: 14,
+                                                width: 80,
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius:
+                                                      BorderRadius.circular(4),
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                      // Button placeholder
+                                      Container(
+                                        height: screenWidth < 600 ? 36 : 44,
+                                        width: double.infinity,
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius:
+                                              BorderRadius.circular(8),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -785,15 +957,16 @@ class _ShopScreenState extends State<ShopScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.blue, width: 2),
+                      borderSide:
+                          const BorderSide(color: Colors.blue, width: 2),
                     ),
                     errorBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.red, width: 1),
+                      borderSide: const BorderSide(color: Colors.red, width: 1),
                     ),
                     focusedErrorBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.red, width: 2),
+                      borderSide: const BorderSide(color: Colors.red, width: 2),
                     ),
                   ),
                   validator: (value) {

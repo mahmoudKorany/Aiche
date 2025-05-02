@@ -11,6 +11,7 @@ import 'dart:ui';
 import 'package:share_plus/share_plus.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:shimmer/shimmer.dart';
 
 class CollectionDetailsScreen extends StatefulWidget {
   final CollectionModel collection;
@@ -232,6 +233,14 @@ class _CollectionDetailsScreenState extends State<CollectionDetailsScreen>
                   height: screenHeight * 0.2,
                   width: double.infinity,
                   fit: BoxFit.cover,
+                  placeholder: (context, url) => Shimmer.fromColors(
+                    baseColor: Colors.grey[300]!,
+                    highlightColor: Colors.grey[100]!,
+                    child: Container(
+                      height: screenHeight * 0.2,
+                      color: Colors.grey[300],
+                    ),
+                  ),
                   errorWidget: (context, error, stackTrace) => Container(
                     height: screenHeight * 0.2,
                     color: Colors.grey[300],
@@ -532,6 +541,13 @@ class _CollectionDetailsScreenState extends State<CollectionDetailsScreen>
                 imageUrl: widget.collection.image ??
                     'https://via.placeholder.com/150',
                 fit: BoxFit.contain,
+                placeholder: (context, url) => Shimmer.fromColors(
+                  baseColor: Colors.grey[300]!,
+                  highlightColor: Colors.grey[100]!,
+                  child: Container(
+                    color: Colors.grey[300],
+                  ),
+                ),
                 errorWidget: (context, error, stackTrace) => Container(
                   color: Colors.grey[800],
                   child: Column(
@@ -598,10 +614,20 @@ class _CollectionDetailsScreenState extends State<CollectionDetailsScreen>
                       borderRadius:
                           const BorderRadius.vertical(top: Radius.circular(12)),
                       child: CachedNetworkImage(
-                      imageUrl: product.image ?? 'https://via.placeholder.com/150',
+                        imageUrl:
+                            product.image ?? 'https://via.placeholder.com/150',
                         height: screenWidth < 600 ? 120 : screenWidth * 0.15,
                         width: double.infinity,
                         fit: BoxFit.cover,
+                        placeholder: (context, url) => Shimmer.fromColors(
+                          baseColor: Colors.grey[300]!,
+                          highlightColor: Colors.grey[100]!,
+                          child: Container(
+                            height:
+                                screenWidth < 600 ? 120 : screenWidth * 0.15,
+                            color: Colors.grey[300],
+                          ),
+                        ),
                         errorWidget: (context, error, stackTrace) => Container(
                           height: screenWidth < 600 ? 120 : screenWidth * 0.15,
                           color: Colors.grey[300],
@@ -750,8 +776,16 @@ class _CollectionDetailsScreenState extends State<CollectionDetailsScreen>
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(16),
                   child: CachedNetworkImage(
-                   imageUrl:  product.image ?? 'https://via.placeholder.com/150',
+                    imageUrl:
+                        product.image ?? 'https://via.placeholder.com/150',
                     fit: BoxFit.cover,
+                    placeholder: (context, url) => Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: Container(
+                        color: Colors.grey[300],
+                      ),
+                    ),
                     errorWidget: (context, error, stackTrace) => Container(
                       color: Colors.grey[700],
                       child: Icon(
@@ -866,7 +900,7 @@ class _CollectionDetailsScreenState extends State<CollectionDetailsScreen>
                           GestureDetector(
                             onTap: () {
                               // Open the link in a web view or browser
-                              launchUrl(Uri.parse(product.link??''));
+                              launchUrl(Uri.parse(product.link ?? ''));
                             },
                             child: Container(
                               padding: EdgeInsets.all(screenWidth * 0.04),
@@ -890,17 +924,20 @@ class _CollectionDetailsScreenState extends State<CollectionDetailsScreen>
                                         Text(
                                           'Product Link',
                                           style: TextStyle(
-                                            fontSize: screenWidth < 600 ? 14 : 16,
+                                            fontSize:
+                                                screenWidth < 600 ? 14 : 16,
                                             color: Colors.white70,
                                           ),
                                         ),
                                         Text(
                                           product.link!,
                                           style: TextStyle(
-                                            fontSize: screenWidth < 600 ? 16 : 18,
+                                            fontSize:
+                                                screenWidth < 600 ? 16 : 18,
                                             fontWeight: FontWeight.bold,
                                             color: Colors.blue[300],
-                                            decoration: TextDecoration.underline,
+                                            decoration:
+                                                TextDecoration.underline,
                                           ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
