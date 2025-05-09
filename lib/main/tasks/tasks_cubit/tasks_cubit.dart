@@ -60,7 +60,6 @@ class TasksCubit extends Cubit<TasksState> {
   Future<void> getTasks() async {
     try {
       emit(TasksLoading());
-      await getTasksFromApi();
 
       // Query the database
       List<Map<String, dynamic>> tasksMap = await _database.query(_tableName);

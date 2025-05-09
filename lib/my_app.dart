@@ -30,7 +30,7 @@ class _MyAppState extends State<MyApp> {
           create: (context) => InternetCubit()..checkConnection(),
         ),
         BlocProvider(
-          create: (context) => TasksCubit()..getTasks(),
+          create: (context) => TasksCubit()..getTasks()..getTasksFromApi(),
         ),
         BlocProvider(
           create: (context) => ShopCubit()..getAllProducts()..getAllCollections(),
