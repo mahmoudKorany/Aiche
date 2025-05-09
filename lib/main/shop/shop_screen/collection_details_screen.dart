@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:aiche/core/shared/components/components.dart';
 import 'package:aiche/core/shared/components/gaps.dart';
 import 'package:aiche/main/blogs/blog_details/blog_details_screen.dart';
@@ -5,8 +7,11 @@ import 'package:aiche/main/shop/Model/collection_model.dart';
 import 'package:aiche/main/shop/shop_cubit/shop_cubit.dart';
 import 'package:aiche/main/shop/shop_cubit/shop_state.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 import 'dart:ui';
 import 'package:share_plus/share_plus.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -1238,53 +1243,86 @@ class _CollectionDetailsScreenState extends State<CollectionDetailsScreen>
                 // Submit Button
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E86C1),
-                      foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(
-                        vertical: screenHeight * 0.015,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 2,
-                    ),
-                    onPressed: () {
-                      if (formKey.currentState!.validate()) {
-                        // Place order using the collection ID and phone number
-                        if (widget.collection.id != null) {
-                          shopCubit.placeCollectionOrder(
-                            collectionId: widget.collection.id ?? 0,
-                            phone: phoneController.text,
-                          );
-                          Navigator.pop(context);
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                  'Order placed for ${widget.collection.name}'),
-                              backgroundColor: Colors.green,
-                              behavior: SnackBarBehavior.floating,
+                  child: BlocConsumer<ShopCubit, ShopState>(
+                    listener: (context, state) {},
+                    builder: (context, state) {
+                      return ConditionalBuilder(
+                        condition: state is! PlaceOrderLoadingState,
+                        fallback: (context) => Platform.isIOS
+                            ? const Center(
+                                child: CupertinoActivityIndicator(
+                                  radius: 20,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Center(
+                                child: SizedBox(
+                                  height: 50,
+                                  width: 50,
+                                  child: LoadingIndicator(
+                                    indicatorType: Indicator.ballRotateChase,
+                                    colors: [
+                                      Colors.white,
+                                    ],
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              ),
+                        builder: (context) => ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2E86C1),
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(
+                              vertical: screenHeight * 0.015,
                             ),
-                          );
-                        } else {
-                          Fluttertoast.showToast(
-                            msg: "Cannot place order. Invalid collection ID.",
-                            toastLength: Toast.LENGTH_SHORT,
-                            gravity: ToastGravity.BOTTOM,
-                            backgroundColor: Colors.red,
-                            textColor: Colors.white,
-                          );
-                        }
-                      }
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 2,
+                          ),
+                          onPressed: () {
+                            if (formKey.currentState!.validate()) {
+                              // Place order using the collection ID and phone number
+                              if (widget.collection.id != null) {
+                                shopCubit.placeCollectionOrder(
+                                  collectionId: widget.collection.id ?? 0,
+                                  phone: phoneController.text,
+                                );
+                                Navigator.pop(context);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'waiting to order place',
+                                      style: TextStyle(
+                                        color: Colors.white,
+                                        fontSize: screenWidth < 600 ? 14 : 16,
+                                      ),
+                                    ),
+                                    backgroundColor: Colors.green,
+                                  ),
+                                );
+                              } else {
+                                Fluttertoast.showToast(
+                                  msg:
+                                      "Cannot place order. Invalid collection ID.",
+                                  toastLength: Toast.LENGTH_SHORT,
+                                  gravity: ToastGravity.BOTTOM,
+                                  backgroundColor: Colors.red,
+                                  textColor: Colors.white,
+                                );
+                              }
+                            }
+                          },
+                          child: Text(
+                            'Confirm Order',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: screenWidth < 600 ? 16 : 18,
+                            ),
+                          ),
+                        ),
+                      );
                     },
-                    child: Text(
-                      'Confirm Order',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: screenWidth < 600 ? 16 : 18,
-                      ),
-                    ),
                   ),
                 ),
               ],

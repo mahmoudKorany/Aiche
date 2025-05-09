@@ -30,3 +30,17 @@ final class LayoutGetAwardsError extends LayoutState {
   final String error;
   LayoutGetAwardsError(this.error);
 }
+
+class LayoutRequestJoinLoading extends LayoutState {}
+class LayoutRequestJoinSuccess extends LayoutState {}
+class LayoutRequestJoinError extends LayoutState {
+  final String error;
+  LayoutRequestJoinError(this.error);
+}
+
+class LayoutGetUserSessionsLoading extends LayoutState {}
+class LayoutGetUserSessionsSuccess extends LayoutState {}
+class LayoutGetUserSessionsError extends LayoutState {
+  final String error;
+  LayoutGetUserSessionsError(this.error);
+}

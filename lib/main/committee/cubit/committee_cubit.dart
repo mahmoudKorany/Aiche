@@ -21,7 +21,6 @@ class CommitteeCubit extends Cubit<CommitteeState> {
       DioHelper.getData(
               url: UrlConstants.getCommittees, query: {}, token: token)
           .then((value) {
-            print(value.data);
         for (var element in value.data['data']) {
           committeeList.add(CommitteeModel.fromJson(element));
         }

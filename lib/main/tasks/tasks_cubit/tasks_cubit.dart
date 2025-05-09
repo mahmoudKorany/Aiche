@@ -287,7 +287,8 @@ class TasksCubit extends Cubit<TasksState> {
     String title,
     String description,
     DateTime dueDate,
-  ) async {
+  ) async
+  {
     try {
       // Use a microtask to help ensure we're not blocking the main thread
       // while still handling the notification operation properly
@@ -310,7 +311,8 @@ class TasksCubit extends Cubit<TasksState> {
   }
 
   // Cancel a notification
-  Future<void> _cancelNotification(int notificationId) async {
+  Future<void> _cancelNotification(int notificationId) async
+  {
     try {
       // Use a microtask to help ensure proper thread handling
       await Future.microtask(() async {
@@ -365,4 +367,8 @@ class TasksCubit extends Cubit<TasksState> {
     await _database.close();
     super.close();
   }
+
+
+  // get All tasks From API
+
 }

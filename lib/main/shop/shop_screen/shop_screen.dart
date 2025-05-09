@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:aiche/core/shared/components/gaps.dart';
 import 'package:aiche/core/shared/functions/functions.dart';
 import 'package:aiche/main/home/home_component/drawer_icon.dart';
@@ -7,8 +9,11 @@ import 'package:aiche/main/shop/shop_cubit/shop_cubit.dart';
 import 'package:aiche/main/shop/shop_cubit/shop_state.dart';
 import 'package:aiche/main/shop/shop_screen/collection_details_screen.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:loading_indicator/loading_indicator.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../core/shared/components/components.dart';
@@ -982,42 +987,75 @@ class _ShopScreenState extends State<ShopScreen> {
                 // Submit Button
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF2E86C1),
-                      foregroundColor: Colors.white,
-                      padding: EdgeInsets.symmetric(
-                        vertical: screenWidth < 600 ? 12 : 16,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      elevation: 2,
-                    ),
-                    onPressed: () {
-                      if (formKey.currentState!.validate()) {
-                        // Place order using the product ID and phone number
-                        shopCubit.placeProductOrder(
-                          productId: product.id ?? 0,
-                          phone: phoneController.text,
-                        );
-                        Navigator.pop(context);
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text('Order placed for ${product.name}'),
-                            backgroundColor: Colors.green,
-                            behavior: SnackBarBehavior.floating,
+                  child: BlocConsumer<ShopCubit, ShopState>(
+                    listener: (context, state) {},
+                    builder: (context, state) {
+                      return ConditionalBuilder(
+                        condition: state is! PlaceOrderLoadingState,
+                        fallback: (context) => Platform.isIOS
+                            ? const Center(
+                                child: CupertinoActivityIndicator(
+                                  radius: 20,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : const Center(
+                                child: SizedBox(
+                                  height: 50,
+                                  width: 50,
+                                  child: LoadingIndicator(
+                                    indicatorType: Indicator.ballRotateChase,
+                                    colors: [
+                                      Colors.white,
+                                    ],
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              ),
+                        builder: (context) => ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF2E86C1),
+                            foregroundColor: Colors.white,
+                            padding: EdgeInsets.symmetric(
+                              vertical: screenWidth < 600 ? 12 : 16,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 2,
                           ),
-                        );
-                      }
+                          onPressed: () {
+                            if (formKey.currentState!.validate()) {
+                              // Place order using the product ID and phone number
+                              shopCubit.placeProductOrder(
+                                productId: product.id ?? 0,
+                                phone: phoneController.text,
+                              );
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'waiting to order place',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: screenWidth < 600 ? 14 : 16,
+                                    ),
+                                  ),
+                                  backgroundColor: Colors.green,
+                                ),
+                              );
+                            }
+                          },
+                          child: Text(
+                            'Confirm Order',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: screenWidth < 600 ? 16 : 18,
+                            ),
+                          ),
+                        ),
+                      );
                     },
-                    child: Text(
-                      'Confirm Order',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: screenWidth < 600 ? 16 : 18,
-                      ),
-                    ),
                   ),
                 ),
               ],

@@ -1,3 +1,4 @@
+import 'package:aiche/core/shared/components/components.dart';
 import 'package:aiche/core/shared/constants/constants.dart';
 import 'package:aiche/core/shared/constants/url_constants.dart';
 import 'package:aiche/main/shop/Model/collection_model.dart';
@@ -9,7 +10,6 @@ import '../../../core/services/dio/dio.dart';
 class ShopCubit extends Cubit<ShopState> {
   ShopCubit() : super(ShopInitial());
   static ShopCubit get(context) => BlocProvider.of(context);
-
 
   //GET ALL PRODUCTS
   List<ProductModel> allProducts = [];
@@ -58,7 +58,6 @@ class ShopCubit extends Cubit<ShopState> {
     }
   }
 
-
   // Place Order
   Future<void> placeProductOrder({
     required int productId,
@@ -74,7 +73,8 @@ class ShopCubit extends Cubit<ShopState> {
           'product_id': productId,
         },
       ).then((value) {
-        print(value.data);
+        showToast(
+            msg: 'Product order created successfully', state: MsgState.success);
         emit(PlaceOrderSuccessState());
       });
       // Mock data
@@ -98,8 +98,8 @@ class ShopCubit extends Cubit<ShopState> {
           'collection_id': collectionId,
         },
       ).then((value) {
-        // Handle the response if needed
-        print(value.data);
+        showToast(
+            msg: 'Product order created successfully', state: MsgState.success);
         emit(PlaceOrderSuccessState());
       });
       // Mock data

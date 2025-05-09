@@ -1,6 +1,8 @@
 import 'package:aiche/core/shared/components/components.dart';
 import 'package:aiche/core/shared/components/gaps.dart';
+import 'package:aiche/core/shared/functions/functions.dart';
 import 'package:aiche/main/blogs/blogs_cubit/blogs_cubit.dart';
+import 'package:aiche/main/committee/all_committees_screen.dart';
 import 'package:aiche/main/committee/cubit/committee_cubit.dart';
 import 'package:aiche/main/committee/cubit/committee_states.dart';
 import 'package:aiche/main/events/events_cubit/events_cubit.dart';
@@ -127,7 +129,7 @@ class HomeBody extends StatelessWidget {
                         const Spacer(),
                         InkWell(
                           onTap: () {
-                            // Navigate to committees screen
+                            navigateTo(context: context, widget: const AllCommitteesScreen());
                           },
                           child: Text(
                             'View All',

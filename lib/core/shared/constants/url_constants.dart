@@ -7,6 +7,7 @@ class UrlConstants {
   static const String login = 'login';
   static const String register = 'register';
   static const String getUserDetails = 'profile';
+  static const String signWithGoogle = 'login/google';
   //logout
   static const String logout = 'logout';
   //update
@@ -34,11 +35,7 @@ class UrlConstants {
       'committees/$committeeId/tasks/$id';
 
   ///sessions
-  static String getSessions(String committeeId) =>
-      'committees/$committeeId/sessions';
-  static String getSessionDetailsbyId(
-          {required committeeId, required String id}) =>
-      'committees/$committeeId/sessions/$id';
+  static const String getSessions = 'sessions';
 
   // banner
   static const String getHomeBanner = 'baners';
@@ -53,4 +50,9 @@ class UrlConstants {
   static const String getAllCollections = 'collections';
   static const String placeProductOrder = 'products-orders';
   static const String placeCollectionOrder = 'collections-orders';
+
+
+  // reqest-join
+  static const String requestJoin = 'reqest-join';
+
 }

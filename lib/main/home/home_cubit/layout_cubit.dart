@@ -7,7 +7,9 @@ import 'package:aiche/main/home/home_component/home_body.dart';
 import 'package:aiche/main/home/model/awards_model.dart';
 import 'package:aiche/main/home/model/banner_model.dart';
 import 'package:aiche/main/home/model/material_model.dart';
+import 'package:aiche/main/sessions/model/session_model.dart';
 import 'package:aiche/main/shop/shop_screen/shop_screen.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -110,8 +112,59 @@ class LayoutCubit extends Cubit<LayoutState> {
       });
       emit(LayoutGetAwardsSuccess());
     } catch (error) {
-      print(error.toString());
       emit(LayoutGetAwardsError(error.toString()));
+    }
+  }
+
+
+  // request join
+  Future<void> requestJoinCommittee({
+    required int committeeId,
+  }) async {
+    emit(LayoutRequestJoinLoading());
+    try {
+      await DioHelper.postData(
+        url: UrlConstants.requestJoin,
+        data: {
+          'committee_id': committeeId,
+        },
+        token: token??'',
+      ).then((value) {
+        if (value.statusCode == 200) {
+
+          emit(LayoutRequestJoinSuccess());
+        } else {
+          emit(LayoutRequestJoinError(value.statusMessage.toString()));
+        }
+      });
+    } catch (error) {
+      emit(LayoutRequestJoinError(error.toString()));
+    }
+  }
+
+  //get user sessions
+  List<SessionModel> userSessions = [];
+  Future<void> getUserSessions() async {
+    userSessions = [];
+    emit(LayoutGetUserSessionsLoading());
+    try {
+      await DioHelper.getData(
+        url: UrlConstants.getSessions,
+        query: {},
+        token: token??'',
+      ).then((value) {
+        print(value.data);
+        if (value.statusCode == 200) {
+          for (var element in value.data['data']) {
+            userSessions.add(SessionModel.fromJson(element));
+          }
+        } else {
+          emit(LayoutGetUserSessionsError(value.statusMessage.toString()));
+        }
+      });
+      emit(LayoutGetUserSessionsSuccess());
+    } catch (error) {
+      emit(LayoutGetUserSessionsError(error.toString()));
     }
   }
 }

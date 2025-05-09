@@ -4,6 +4,7 @@ import 'package:aiche/auth/auth_cubit/auth_state.dart';
 import 'package:aiche/auth/profile/profile_screen.dart';
 import 'package:aiche/core/shared/components/gaps.dart';
 import 'package:aiche/core/shared/functions/functions.dart';
+import 'package:aiche/main/sessions/sessions_screem.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
 import 'package:flutter/cupertino.dart';
@@ -199,6 +200,13 @@ class _CustomDrawerState extends State<CustomDrawer>
               letterSpacing: 1.2,
             ),
           ),
+        ),
+        _buildMenuItem(
+          icon: Icons.meeting_room,
+          title: 'Sessions',
+          onTap: () {
+            navigateTo(context: context, widget: const SessionsScreen());
+          },
         ),
         _buildMenuItem(
           icon: Icons.event,

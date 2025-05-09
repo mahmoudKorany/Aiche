@@ -1,34 +1,33 @@
+import 'dart:io';
 import 'package:aiche/auth/auth_screens/login_screen.dart';
 import 'package:aiche/core/services/firebase_messaging_service.dart';
 import 'package:aiche/core/shared/constants/constants.dart';
 import 'package:aiche/main/home/home_screen/home_layout_screen.dart';
 import 'package:aiche/welcome_screens/onboarding_screen/onboarding.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'firebase_options.dart';
 import 'core/services/dio/dio.dart';
 import 'core/utils/cache-helper/cache-helper.dart';
 import 'my_app.dart';
-
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  if (kDebugMode) {
+    print('Handling a background message ${message.messageId}');
+  }
+  AwesomeNotifications().createNotification(
+    content: NotificationContent(
+      id: 1,
+      channelKey: "basic_channel",
+      title: message.notification?.title ?? '',
+      body: message.notification?.body ?? '',
+    ),
+  );
+}
 Widget? startScreen;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Initialize Firebase
-  try {
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-  } catch (e) {
-    if (kDebugMode) {
-      // print('Firebase initialization error: $e');
-    }
-  }
-
-
   await CacheHelper.init();
   await DioHelper.init();
 
@@ -40,10 +39,22 @@ void main() async {
       // print('Firebase Messaging initialization error: $e');
     }
   }
+  int? noOfRequest = await CacheHelper.getData(key: 'noOfRequest');
+  if(noOfRequest == null)
+  {
+    await CacheHelper.saveData(key: 'noOfRequest' ,value: 0);
+    noOfRequest = 0;
+  }
 
-  // Initialize Awesome Notifications
-  AwesomeNotifications().requestPermissionToSendNotifications();
-  try {
+  if(noOfRequest == 0 || noOfRequest > 10){
+    AwesomeNotifications().requestPermissionToSendNotifications();
+  }
+  noOfRequest = noOfRequest + 1;
+
+  await CacheHelper.saveData(key: 'noOfRequest' ,value: noOfRequest);
+
+  try
+  {
     await AwesomeNotifications().initialize(
       null,
       [
@@ -52,24 +63,12 @@ void main() async {
           channelKey: 'basic_channel',
           channelName: 'Basic notifications',
           channelDescription: 'Notification channel for basic tests',
-        ),
-        NotificationChannel(
-          channelGroupKey: 'task_channel_group',
-          channelKey: 'task_channel',
-          channelName: 'Task Reminders',
-          channelDescription: 'Notifications for task deadlines and reminders',
-          defaultColor: Colors.blue,
-          importance: NotificationImportance.High,
-          defaultRingtoneType: DefaultRingtoneType.Alarm,
         )
       ],
       channelGroups: [
         NotificationChannelGroup(
             channelGroupKey: 'basic_channel_group',
-            channelGroupName: 'Basic group'),
-        NotificationChannelGroup(
-            channelGroupKey: 'task_channel_group',
-            channelGroupName: 'Task Reminders')
+            channelGroupName: 'Basic group')
       ],
     );
   } catch (e) {
@@ -77,11 +76,35 @@ void main() async {
       print('AwesomeNotifications Error: $e');
     }
   }
-
-  // var fcmToken = await  FirebaseMessaging.instance.getToken();
-  // if (kDebugMode) {
-  //   print('FCM Token: ${fcmToken.toString()}');
-  // }
+  if(Platform.isAndroid) {
+    FirebaseMessaging.onMessage.listen((message) async {
+      if (kDebugMode) {
+        print('Handling a background message ${message.messageId}');
+      }
+      AwesomeNotifications().createNotification(
+        content: NotificationContent(
+          id: 1,
+          channelKey: "basic_channel",
+          title: message.notification?.title ?? '',
+          body: message.notification?.body ?? '',
+        ),
+      );
+    });
+    FirebaseMessaging.onMessageOpenedApp.listen((message) async {
+      if (kDebugMode) {
+        print('Handling a background message ${message.messageId}');
+      }
+      AwesomeNotifications().createNotification(
+        content: NotificationContent(
+          id: 1,
+          channelKey: "basic_channel",
+          title: message.notification?.title ?? '',
+          body: message.notification?.body ?? '',
+        ),
+      );
+    });
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  }
   token = await CacheHelper.getData(key: 'token');
   bool? onBoarding = await CacheHelper.getData(key: 'onBoarding');
 

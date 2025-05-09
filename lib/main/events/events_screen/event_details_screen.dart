@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:intl/intl.dart';
 
 import '../events_model/event_model.dart' as event_models;
 
@@ -192,22 +193,13 @@ class EventDetailsScreen extends StatelessWidget {
                         ),
                         child: Column(
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: _buildInfoItem(
-                                      Icons.calendar_today,
-                                      _formatDateRange(eventModel.startDate,
-                                          eventModel.endDate)),
-                                ),
-                                SizedBox(width: 12.w),
-                                Expanded(
-                                  child: _buildInfoItem(Icons.location_on,
-                                      eventModel.place ?? ''),
-                                ),
-                              ],
-                            ),
+                            _buildDateDisplay(
+                                eventModel.startDate, eventModel.endDate),
+
+                            // Location info
+                            _buildInfoItem(
+                                Icons.location_on, eventModel.place ?? 'TBA'),
+
                             if (eventModel.facebookLink != null &&
                                 eventModel.facebookLink!.isNotEmpty)
                               Padding(
@@ -318,19 +310,20 @@ class EventDetailsScreen extends StatelessWidget {
 
   Widget _buildInfoItem(IconData icon, String text) {
     return Row(
-      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Icon(icon, color: Colors.white.withOpacity(0.7), size: 20.sp),
         SizedBox(width: 8.w),
-        Flexible(
+        Expanded(
           child: Text(
             text,
             style: TextStyle(
               color: Colors.white.withOpacity(0.9),
               fontSize: 14.sp,
+              height: 1.4,
             ),
-            overflow: TextOverflow.ellipsis,
-            maxLines: 2,
+            overflow: TextOverflow.visible,
+            maxLines: 3,
           ),
         ),
       ],
@@ -373,8 +366,36 @@ class EventDetailsScreen extends StatelessWidget {
 
   String _formatDateRange(String? start, String? end) {
     if (start == null) return 'TBA';
-    if (end == null || start == end) return start;
-    return '$start - $end';
+
+    try {
+      // Parse the date strings to DateTime objects
+      final DateTime startDate = DateTime.parse(start);
+      final DateTime? endDate = end != null ? DateTime.parse(end) : null;
+
+      // Format for displaying date with time
+      final DateFormat fullFormat = DateFormat('MMM d, yyyy · h:mm a');
+      final DateFormat dateOnlyFormat = DateFormat('MMM d, yyyy');
+
+      // Check if the dates are on the same day
+      if (endDate != null) {
+        if (startDate.year == endDate.year &&
+            startDate.month == endDate.month &&
+            startDate.day == endDate.day) {
+          // Same day event (e.g., "May 15, 2025 · 9:00 AM - 5:00 PM")
+          return '${dateOnlyFormat.format(startDate)} · ${DateFormat('h:mm a').format(startDate)} - ${DateFormat('h:mm a').format(endDate)}';
+        } else {
+          // Multi-day event (e.g., "May 15 - May 17, 2025")
+          return '${DateFormat('MMM d').format(startDate)} - ${dateOnlyFormat.format(endDate)}';
+        }
+      }
+
+      // Single date with time if available
+      return fullFormat.format(startDate);
+    } catch (e) {
+      // Fallback to original strings if parsing fails
+      if (end == null || start == end) return start;
+      return '$start - $end';
+    }
   }
 
   Future<void> _launchUrl(String? url) async {
@@ -394,6 +415,56 @@ class EventDetailsScreen extends StatelessWidget {
         '${eventModel.formLink != null ? 'Register here: ${eventModel.formLink}' : ''}';
 
     Share.share(text);
+  }
+
+  // Create a dedicated date display widget
+  Widget _buildDateDisplay(String? startDate, String? endDate) {
+    final formattedDate = _formatDateRange(startDate, endDate);
+
+    return Container(
+      margin: EdgeInsets.only(top: 12.h, bottom: 16.h),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+      decoration: BoxDecoration(
+        color: Colors.blue.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.event,
+            color: Colors.blue.withOpacity(0.9),
+            size: 24.sp,
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Event Date & Time',
+                  style: TextStyle(
+                    color: Colors.white.withOpacity(0.7),
+                    fontSize: 12.sp,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  formattedDate,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.bold,
+                    height: 1.3,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

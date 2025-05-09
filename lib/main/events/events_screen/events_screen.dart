@@ -80,7 +80,8 @@ class EventsScreen extends StatelessWidget {
                                         tag: 'event-${event.id}',
                                         child: Container(
                                           margin: EdgeInsets.symmetric(
-                                              vertical: 8.0.h, horizontal: 4.0.w),
+                                              vertical: 8.0.h,
+                                              horizontal: 4.0.w),
                                           child: InkWell(
                                             onTap: () {
                                               navigateTo(
@@ -93,10 +94,10 @@ class EventsScreen extends StatelessWidget {
                                             child: TweenAnimationBuilder(
                                               duration: const Duration(
                                                   milliseconds: 300),
-                                              tween:
-                                                  Tween<double>(begin: 0, end: 1),
-                                              builder:
-                                                  (context, double value, child) {
+                                              tween: Tween<double>(
+                                                  begin: 0, end: 1),
+                                              builder: (context, double value,
+                                                  child) {
                                                 return Transform.translate(
                                                   offset: Offset(
                                                       0, 32.h * (1 - value)),
@@ -104,7 +105,8 @@ class EventsScreen extends StatelessWidget {
                                                     opacity: value,
                                                     child: Container(
                                                       decoration: BoxDecoration(
-                                                        gradient: LinearGradient(
+                                                        gradient:
+                                                            LinearGradient(
                                                           begin:
                                                               Alignment.topLeft,
                                                           end: Alignment
@@ -112,18 +114,22 @@ class EventsScreen extends StatelessWidget {
                                                           colors: [
                                                             const Color(
                                                                     0xFF111347)
-                                                                .withOpacity(0.8),
+                                                                .withOpacity(
+                                                                    0.8),
                                                             const Color(
                                                                     0xFF12426F)
-                                                                .withOpacity(0.8),
+                                                                .withOpacity(
+                                                                    0.8),
                                                             const Color(
                                                                     0xFF180438)
-                                                                .withOpacity(0.8),
+                                                                .withOpacity(
+                                                                    0.8),
                                                           ],
                                                         ),
                                                         borderRadius:
-                                                            BorderRadius.circular(
-                                                                20.0.r),
+                                                            BorderRadius
+                                                                .circular(
+                                                                    20.0.r),
                                                         border: Border.all(
                                                           color: Colors.white
                                                               .withOpacity(0.1),
@@ -171,23 +177,22 @@ class EventsScreen extends StatelessWidget {
                                                                     height:
                                                                         16.0.h),
                                                                 Wrap(
-                                                                  spacing: 8.0.w,
+                                                                  spacing:
+                                                                      8.0.w,
                                                                   children: [
                                                                     if (event
                                                                             .category !=
                                                                         null)
                                                                       Chip(
                                                                         label: Text(
-                                                                            event
-                                                                                .category!),
+                                                                            event.category!),
                                                                         backgroundColor: Colors
                                                                             .blue
-                                                                            .withOpacity(
-                                                                                0.7),
+                                                                            .withOpacity(0.7),
                                                                         labelStyle:
                                                                             TextStyle(
-                                                                          color: Colors
-                                                                              .white,
+                                                                          color:
+                                                                              Colors.white,
                                                                           fontSize:
                                                                               12.sp,
                                                                         ),
@@ -197,16 +202,14 @@ class EventsScreen extends StatelessWidget {
                                                                         null)
                                                                       Chip(
                                                                         label: Text(
-                                                                            event
-                                                                                .status!),
+                                                                            event.status!),
                                                                         backgroundColor: Colors
                                                                             .green
-                                                                            .withOpacity(
-                                                                                0.7),
+                                                                            .withOpacity(0.7),
                                                                         labelStyle:
                                                                             TextStyle(
-                                                                          color: Colors
-                                                                              .white,
+                                                                          color:
+                                                                              Colors.white,
                                                                           fontSize:
                                                                               12.sp,
                                                                         ),
@@ -564,7 +567,7 @@ class EventsScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-                
+
                 // Event Body Shimmer
                 Expanded(
                   child: Padding(
@@ -594,11 +597,12 @@ class EventsScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                
+
                 // Event Footer Shimmer
                 Container(
                   height: 50.h,
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                  padding:
+                      EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.3),
                     borderRadius: BorderRadius.only(
