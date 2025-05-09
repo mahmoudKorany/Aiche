@@ -40,3 +40,10 @@ class NotificationCancelled extends TasksState {
   final int notificationId;
   NotificationCancelled(this.notificationId);
 }
+
+class GetAllTasksFromApiLoading extends TasksState {}
+class GetAllTasksFromApiLoaded extends TasksState {}
+class GetAllTasksFromApiError extends TasksState {
+  final String message;
+  GetAllTasksFromApiError(this.message);
+}

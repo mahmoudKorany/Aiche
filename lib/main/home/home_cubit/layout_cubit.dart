@@ -1,4 +1,5 @@
 import 'package:aiche/core/services/dio/dio.dart';
+import 'package:aiche/core/shared/components/components.dart';
 import 'package:aiche/core/shared/constants/constants.dart';
 import 'package:aiche/core/shared/constants/url_constants.dart';
 import 'package:aiche/main/blogs/blogs_screen/blogs_screen.dart';
@@ -138,6 +139,7 @@ class LayoutCubit extends Cubit<LayoutState> {
         }
       });
     } catch (error) {
+      showToast(msg: "Failed to request join : Maybe you are already member of committee", state: MsgState.error );
       emit(LayoutRequestJoinError(error.toString()));
     }
   }
@@ -153,7 +155,6 @@ class LayoutCubit extends Cubit<LayoutState> {
         query: {},
         token: token??'',
       ).then((value) {
-        print(value.data);
         if (value.statusCode == 200) {
           for (var element in value.data['data']) {
             userSessions.add(SessionModel.fromJson(element));

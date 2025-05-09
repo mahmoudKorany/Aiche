@@ -9,9 +9,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:intl/intl.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/shared/components/components.dart';
 import '../../../core/shared/components/gaps.dart';
 import '../../home/home_component/drawer_icon.dart';
+import '../models/committee_task_model.dart';
 import 'add_task_dialog.dart';
 import 'edit_task_screen.dart';
 
@@ -136,7 +138,7 @@ class _TasksScreenState extends State<TasksScreen>
                   Expanded(
                     child: state is TasksLoading
                         ? _buildLoadingIndicator()
-                        : tasks.isEmpty
+                        : TasksCubit.get(context).tasks.isEmpty
                             ? _buildEmptyState()
                             : _selectedFilterIndex == 0
                                 ? _buildCommitteeTabContent(context)
@@ -309,8 +311,8 @@ class _TasksScreenState extends State<TasksScreen>
     // Select appropriate messages based on the current tab
     if (_selectedFilterIndex == 0) {
       // Committee tab
-      message = 'No committee data available';
-      subMessage = 'Committee information will appear here';
+      message = 'No committee tasks available';
+      subMessage = 'Committee tasks will appear here';
       icon = Icons.group_work_outlined;
       showAddButton = false;
     } else if (_selectedFilterIndex == 1) {
@@ -833,74 +835,54 @@ class _TasksScreenState extends State<TasksScreen>
   }
 
   Widget _buildCommitteeTabContent(BuildContext context) {
-    // Mock committee data (this would be replaced with actual API data)
-    final List<Map<String, dynamic>> committeeData = [
-      {
-        'name': 'Academic Committee',
-        'image': 'assets/images/committee.jpg',
-        'taskCount': 5,
-        'completedCount': 2,
-        'color': Colors.blue,
+    return BlocBuilder<TasksCubit, TasksState>(
+      builder: (context, state) {
+        final tasksCubit = context.read<TasksCubit>();
+        
+        if (state is GetAllTasksFromApiLoading) {
+          return _buildLoadingIndicator();
+        }
+        
+        if (tasksCubit.tasks.isEmpty) {
+          return _buildEmptyState();
+        }
+        
+        return AnimationLimiter(
+          child: ListView.builder(
+            padding: EdgeInsets.symmetric(horizontal: 16.w),
+            physics: const BouncingScrollPhysics(),
+            itemCount: tasksCubit.tasks.length,
+            itemBuilder: (context, index) {
+              final task = tasksCubit.tasks[index];
+              return AnimationConfiguration.staggeredList(
+                position: index,
+                duration: const Duration(milliseconds: 375),
+                child: SlideAnimation(
+                  verticalOffset: 50.0,
+                  child: FadeInAnimation(
+                    child: _buildCommitteeTaskItem(context, task),
+                  ),
+                ),
+              );
+            },
+          ),
+        );
       },
-      {
-        'name': 'PR Committee',
-        'image': 'assets/images/committee.jpg',
-        'taskCount': 8,
-        'completedCount': 3,
-        'color': Colors.purple,
-      },
-      {
-        'name': 'HR Committee',
-        'image': 'assets/images/committee.jpg',
-        'taskCount': 4,
-        'completedCount': 4,
-        'color': Colors.green,
-      },
-      {
-        'name': 'Media Committee',
-        'image': 'assets/images/committee.jpg',
-        'taskCount': 7,
-        'completedCount': 1,
-        'color': Colors.orange,
-      },
-      {
-        'name': 'Technical Committee',
-        'image': 'assets/images/committee.jpg',
-        'taskCount': 6,
-        'completedCount': 3,
-        'color': Colors.red,
-      },
-    ];
-
-    return AnimationLimiter(
-      child: ListView.builder(
-        padding: EdgeInsets.symmetric(horizontal: 16.w),
-        physics: const BouncingScrollPhysics(),
-        itemCount: committeeData.length,
-        itemBuilder: (context, index) {
-          final committee = committeeData[index];
-          return AnimationConfiguration.staggeredList(
-            position: index,
-            duration: const Duration(milliseconds: 375),
-            child: SlideAnimation(
-              verticalOffset: 50.0,
-              child: FadeInAnimation(
-                child: _buildCommitteeItem(context, committee),
-              ),
-            ),
-          );
-        },
-      ),
     );
   }
-
-  Widget _buildCommitteeItem(
-      BuildContext context, Map<String, dynamic> committee)
-  {
-    final double progressValue =
-        committee['completedCount'] / committee['taskCount'];
-    final Color committeeColor = committee['color'];
-
+  
+  Widget _buildCommitteeTaskItem(BuildContext context, TasksModel task) {
+    // Format date if available
+    String formattedDate = '';
+    if (task.date != null && task.date!.isNotEmpty) {
+      try {
+        final DateTime taskDate = DateTime.parse(task.date!);
+        formattedDate = _formatCommitteeTaskDate(taskDate);
+      } catch (e) {
+        formattedDate = task.date ?? 'No date';
+      }
+    }
+    
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
       decoration: BoxDecoration(
@@ -908,13 +890,13 @@ class _TasksScreenState extends State<TasksScreen>
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            committeeColor.withOpacity(0.2),
+            Colors.blue.withOpacity(0.2),
             Colors.white.withOpacity(0.08),
           ],
         ),
         borderRadius: BorderRadius.circular(10.r),
         border: Border.all(
-          color: committeeColor.withOpacity(0.2),
+          color: Colors.blue.withOpacity(0.2),
         ),
         boxShadow: [
           BoxShadow(
@@ -927,28 +909,25 @@ class _TasksScreenState extends State<TasksScreen>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Committee Header
+          // Task Header
           ListTile(
             contentPadding: EdgeInsets.all(16.r),
             leading: Container(
-              width: 50.w,
-              height: 50.h,
+              padding: EdgeInsets.all(8.r),
               decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(8.r),
-                image: DecorationImage(
-                  image: AssetImage(committee['image']),
-                  fit: BoxFit.cover,
-                ),
-                border: Border.all(
-                  color: committeeColor.withOpacity(0.5),
-                  width: 2,
-                ),
+                color: Colors.blue.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(10.r),
+              ),
+              child: Icon(
+                Icons.group_work,
+                color: Colors.blue,
+                size: 24.sp,
               ),
             ),
             title: Text(
-              committee['name'],
+              task.title ?? 'No Title',
               style: TextStyle(
-                fontSize: 18.sp,
+                fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
               ),
@@ -958,103 +937,113 @@ class _TasksScreenState extends State<TasksScreen>
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 8.h),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.assignment_outlined,
-                      size: 14.sp,
-                      color: committeeColor,
+                if (task.description != null && task.description!.isNotEmpty) ...[
+                  SizedBox(height: 6.h),
+                  Text(
+                    task.description!,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: Colors.white70,
                     ),
-                    SizedBox(width: 4.w),
-                    Text(
-                      '${committee['taskCount']} Tasks',
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        color: Colors.white70,
-                      ),
-                    ),
-                    SizedBox(width: 16.w),
-                    Icon(
-                      Icons.check_circle_outline,
-                      size: 14.sp,
-                      color: Colors.green,
-                    ),
-                    SizedBox(width: 4.w),
-                    Text(
-                      '${committee['completedCount']} Completed',
-                      style: TextStyle(
-                        fontSize: 13.sp,
-                        color: Colors.white70,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            trailing: IconButton(
-              icon: Icon(
-                Icons.arrow_forward_ios,
-                color: committeeColor,
-                size: 20.sp,
-              ),
-              onPressed: () {
-                // Navigate to committee details
-                // This would be implemented when API integration is added
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Navigate to ${committee['name']} tasks'),
-                    behavior: SnackBarBehavior.floating,
-                    backgroundColor: committeeColor,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                );
-              },
-            ),
-          ),
-
-          // Committee Progress
-          Padding(
-            padding: EdgeInsets.only(
-              left: 16.w,
-              right: 16.w,
-              bottom: 16.h,
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      'Progress',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: Colors.white60,
-                      ),
-                    ),
-                    Text(
-                      '${(progressValue * 100).toInt()}%',
-                      style: TextStyle(
-                        fontSize: 12.sp,
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
+                ],
                 SizedBox(height: 8.h),
-                LinearProgressIndicator(
-                  value: progressValue,
-                  backgroundColor: Colors.white.withOpacity(0.1),
-                  valueColor: AlwaysStoppedAnimation<Color>(committeeColor),
-                  borderRadius: BorderRadius.circular(4.r),
-                  minHeight: 5.h,
+                Row(
+                  children: [
+                    Icon(
+                      Icons.calendar_today,
+                      size: 14.sp,
+                      color: Colors.blue,
+                    ),
+                    SizedBox(width: 4.w),
+                    Text(
+                      formattedDate.isNotEmpty ? formattedDate : 'No date specified',
+                      style: TextStyle(
+                        fontSize: 13.sp,
+                        color: Colors.white70,
+                      ),
+                    ),
+                    if (task.user != null && task.user!.name != null) ...[
+                      SizedBox(width: 10.w),
+                      Icon(
+                        Icons.person,
+                        size: 14.sp,
+                        color: Colors.amber,
+                      ),
+                      SizedBox(width: 4.w),
+                      Text(
+                        task.user!.name!,
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ],
             ),
           ),
+          
+          // Resource link if available
+          if (task.link != null && task.link!.isNotEmpty)
+            Padding(
+              padding: EdgeInsets.only(
+                left: 16.w,
+                right: 16.w,
+                bottom: 16.h,
+              ),
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  // Open the resource link
+                  // You can use url_launcher or any other method to open the link
+                  launchUrl(
+                    Uri.parse(task.link!),
+                    mode: LaunchMode.externalApplication,
+                  );
+                },
+                icon: Icon(
+                  Icons.link,
+                  size: 18.sp,
+                ),
+                label: Text(
+                  'Open Resource',
+                  style: TextStyle(
+                    fontSize: 14.sp,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue.withOpacity(0.3),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.r),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
+  }
+  
+  String _formatCommitteeTaskDate(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final tomorrow = today.add(const Duration(days: 1));
+    final taskDate = DateTime(date.year, date.month, date.day);
+    
+    if (taskDate.isAtSameMomentAs(today)) {
+      return 'Today';
+    } else if (taskDate.isAtSameMomentAs(tomorrow)) {
+      return 'Tomorrow';
+    } else if (date.isBefore(now) && !_isToday(date)) {
+      return 'Past (${DateFormat('MMM d').format(date)})';
+    } else if (date.difference(now).inDays < 7) {
+      return DateFormat('EEEE').format(date);
+    } else {
+      return DateFormat('MMM d').format(date);
+    }
   }
 }

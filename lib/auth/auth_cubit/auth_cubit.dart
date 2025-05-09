@@ -14,6 +14,7 @@ import 'package:aiche/main/events/events_cubit/events_cubit.dart';
 import 'package:aiche/main/home/home_cubit/layout_cubit.dart';
 import 'package:aiche/main/home/home_screen/home_layout_screen.dart';
 import 'package:aiche/main/shop/shop_cubit/shop_cubit.dart';
+import 'package:aiche/main/tasks/tasks_cubit/tasks_cubit.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -55,6 +56,7 @@ class AuthCubit extends Cubit<AuthState> {
             final tokenValue = response.data['token']?.toString();
             await CacheHelper.saveData(key: 'token', value: tokenValue);
           }
+          await TasksCubit.get(context).getTasksFromApi();
           await BlogsCubit.get(context).getBlogs();
           await LayoutCubit.get(context).getHomeBanner();
           await LayoutCubit.get(context).getAwards();
@@ -104,6 +106,7 @@ class AuthCubit extends Cubit<AuthState> {
       await CacheHelper.saveData(key: 'token', value: response.data['token'])
           .then((v) async {});
       await BlogsCubit.get(context).getBlogs();
+      await TasksCubit.get(context).getTasksFromApi();
       await LayoutCubit.get(context).getHomeBanner();
       await LayoutCubit.get(context).getAwards();
       await LayoutCubit.get(context).getMaterial();

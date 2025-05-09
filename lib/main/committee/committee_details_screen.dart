@@ -1,8 +1,9 @@
 import 'dart:io';
-
 import 'package:aiche/core/shared/components/components.dart';
 import 'package:aiche/core/shared/components/gaps.dart';
+import 'package:aiche/core/shared/functions/functions.dart';
 import 'package:aiche/main/committee/model/committee_model.dart';
+import 'package:aiche/main/committee/profile/profile_screen.dart';
 import 'package:aiche/main/home/home_cubit/layout_cubit.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
@@ -662,6 +663,11 @@ class _CommitteeDetailsScreenState extends State<CommitteeDetailsScreen>
         children: [
           // Admin header with image, name and title
           ListTile(
+            onTap: (){
+              navigateTo(context: context, widget: ProfileDetailScreen(
+                userModel: admin,
+              ));
+            },
             contentPadding: EdgeInsets.all(16.r),
             leading: _buildAdminAvatar(admin),
             title: Shimmer.fromColors(

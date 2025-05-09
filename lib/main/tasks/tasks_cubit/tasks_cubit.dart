@@ -1,3 +1,7 @@
+import 'package:aiche/core/services/dio/dio.dart';
+import 'package:aiche/core/shared/constants/constants.dart';
+import 'package:aiche/core/shared/constants/url_constants.dart';
+import 'package:aiche/main/tasks/models/committee_task_model.dart';
 import 'package:aiche/main/tasks/models/task.dart';
 import 'package:aiche/main/tasks/tasks_cubit/tasks_state.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
@@ -56,6 +60,7 @@ class TasksCubit extends Cubit<TasksState> {
   Future<void> getTasks() async {
     try {
       emit(TasksLoading());
+      await getTasksFromApi();
 
       // Query the database
       List<Map<String, dynamic>> tasksMap = await _database.query(_tableName);
@@ -287,8 +292,7 @@ class TasksCubit extends Cubit<TasksState> {
     String title,
     String description,
     DateTime dueDate,
-  ) async
-  {
+  ) async {
     try {
       // Use a microtask to help ensure we're not blocking the main thread
       // while still handling the notification operation properly
@@ -311,8 +315,7 @@ class TasksCubit extends Cubit<TasksState> {
   }
 
   // Cancel a notification
-  Future<void> _cancelNotification(int notificationId) async
-  {
+  Future<void> _cancelNotification(int notificationId) async {
     try {
       // Use a microtask to help ensure proper thread handling
       await Future.microtask(() async {
@@ -368,7 +371,28 @@ class TasksCubit extends Cubit<TasksState> {
     super.close();
   }
 
-
   // get All tasks From API
+  List<TasksModel> tasks = [];
 
+  Future<void> getTasksFromApi() async {
+    tasks = [];
+    emit(GetAllTasksFromApiLoading());
+    try {
+      DioHelper.getData(url: UrlConstants.getTasks, query: {}, token: token)
+          .then((value) {
+        if (value.statusCode == 200) {
+          for (var element in value.data['data']) {
+            tasks.add(TasksModel.fromJson(element));
+          }
+          emit(GetAllTasksFromApiLoaded());
+        } else {
+          emit(GetAllTasksFromApiError('Failed to load tasks from API'));
+        }
+      }).catchError((error) {
+        emit(GetAllTasksFromApiError('Failed to load tasks from API: $error'));
+      });
+    } catch (e) {
+      emit(GetAllTasksFromApiError('Failed to load tasks from API: $e'));
+    }
+  }
 }
