@@ -78,6 +78,7 @@ class BlogsScreen extends StatelessWidget {
         highlightColor: Colors.grey[100]!.withOpacity(0.5),
         child: ListView.builder(
           itemCount: 5,
+          physics: const BouncingScrollPhysics(),
           itemBuilder: (_, __) => Padding(
             padding: EdgeInsets.symmetric(vertical: 8.0.r),
             child: Container(

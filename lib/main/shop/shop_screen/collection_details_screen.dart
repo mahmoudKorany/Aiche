@@ -807,6 +807,7 @@ class _CollectionDetailsScreenState extends State<CollectionDetailsScreen>
             // Product details
             Expanded(
               child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
                 padding: EdgeInsets.symmetric(
                   horizontal: screenWidth * 0.05,
                   vertical: screenHeight * 0.02,

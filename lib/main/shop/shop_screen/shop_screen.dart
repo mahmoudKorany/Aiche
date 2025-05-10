@@ -443,6 +443,7 @@ class _ShopScreenState extends State<ShopScreen> {
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: collections.length,
+        physics: const BouncingScrollPhysics(),
         itemBuilder: (context, index) {
           final collection = collections[index];
           return GestureDetector(

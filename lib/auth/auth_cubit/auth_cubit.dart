@@ -65,9 +65,9 @@ class AuthCubit extends Cubit<AuthState> {
           await ShopCubit.get(context).getAllCollections();
           await ShopCubit.get(context).getAllProducts();
           await CommitteeCubit.get(context).getCommitteeData();
-          emit(AuthSuccess());
           await getUserData();
-          navigateAndFinish(context: context, widget: HomeLayoutScreen());
+          emit(AuthSuccess());
+          navigateAndFinish(context: context, widget: const HomeLayoutScreen());
           showToast(msg: 'Login done Successfully', state: MsgState.success);
         } catch (e) {
           emit(AuthError("Error parsing response data"));
@@ -125,13 +125,12 @@ class AuthCubit extends Cubit<AuthState> {
       showToast(
           msg: 'Register Failed: Email or password is incorrect',
           state: MsgState.error);
-      print(e.toString());
       emit(RegisterError('Register Failed'));
     }
   }
 
   Future<void> getUserData() async {
-    emit(AuthLoading());
+    emit(AuthLoading1());
     try {
       final response = await DioHelper.getData(
         url: UrlConstants.getUserDetails,

@@ -22,6 +22,7 @@ class CommitteesCard extends StatelessWidget {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: cubit.committeeList.length,
+            physics: const BouncingScrollPhysics(),
             itemBuilder: (context, index) {
               return GestureDetector(
                 onTap: () {
@@ -43,10 +44,12 @@ class CommitteesCard extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 50.0.r,
-                        backgroundImage: CachedNetworkImageProvider(
+                        backgroundImage:  cubit.committeeList[index].img != null && cubit.committeeList[index].img != '' ? CachedNetworkImageProvider(
                           cubit.committeeList[index].img ?? '',
+                        ) :  const AssetImage(
+                          'assets/images/committee.jpg',
+                        ) as ImageProvider,
                         ),
-                      ),
                       SizedBox(height: 10.0.h),
                       Text(
                         cubit.committeeList[index].name ?? '',

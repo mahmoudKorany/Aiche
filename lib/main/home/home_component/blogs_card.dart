@@ -261,9 +261,11 @@ class _BlogsCardState extends State<BlogsCard>
           backgroundColor: Colors.white10,
           child: CircleAvatar(
             radius: 20.r,
-            backgroundImage: CachedNetworkImageProvider(
+            backgroundImage: BlogsCubit.get(context).blogs[index].user!.imageUrl != null ? CachedNetworkImageProvider(
               BlogsCubit.get(context).blogs[index].user!.imageUrl ?? '',
-            ),
+            ) : const AssetImage(
+              'assets/images/person.png',
+            ) as ImageProvider,
           ),
         ),
       ),

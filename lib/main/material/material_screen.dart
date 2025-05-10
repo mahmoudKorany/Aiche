@@ -564,7 +564,7 @@ class _MaterialScreenState extends State<MaterialScreen>
 
   Widget _buildEmptyState() {
     return SingleChildScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
+      physics: const BouncingScrollPhysics(),
       child: Center(
         child: Padding(
           padding: EdgeInsets.symmetric(vertical: 50.h),

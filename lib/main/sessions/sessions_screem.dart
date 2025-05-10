@@ -129,9 +129,6 @@ class _SessionsScreenState extends State<SessionsScreen> {
                       },
                     ),
                   ),
-                  
-                  // Bottom padding for navigation bar
-                  SizedBox(height: 85.h),
                 ],
               ),
             ),
@@ -191,7 +188,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
       padding: EdgeInsets.zero,
-      itemCount: 3,
+      itemCount:  5,
       itemBuilder: (context, index) {
         return Shimmer.fromColors(
           baseColor: Colors.grey.shade300.withOpacity(0.3),

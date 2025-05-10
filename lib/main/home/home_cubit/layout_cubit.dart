@@ -150,7 +150,7 @@ class LayoutCubit extends Cubit<LayoutState> {
     userSessions = [];
     emit(LayoutGetUserSessionsLoading());
     try {
-      await DioHelper.getData(
+       await DioHelper.getData(
         url: UrlConstants.getSessions,
         query: {},
         token: token??'',
