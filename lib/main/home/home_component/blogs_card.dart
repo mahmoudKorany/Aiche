@@ -52,7 +52,10 @@ class _BlogsCardState extends State<BlogsCard>
           return Expanded(
             child: ListView.separated(
               padding: EdgeInsets.zero,
-              physics: const BouncingScrollPhysics(),
+              physics:
+              const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
+              ),
               itemBuilder: (context, index) {
                 return AnimatedBuilder(
                   animation: _scaleAnimation,

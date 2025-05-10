@@ -45,7 +45,10 @@ class HomeBody extends StatelessWidget {
                   horizontal: 20.0.w,
                   vertical: 20.0.h,
                 ),
-                physics: const BouncingScrollPhysics(),
+                physics:
+                const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   crossAxisAlignment: CrossAxisAlignment.start,

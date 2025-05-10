@@ -51,7 +51,7 @@ class HomeShimmerComponents {
       return SizedBox(
         height: 200.h,
         child: ListView.separated(
-          padding: EdgeInsets.zero,
+          padding: EdgeInsets.symmetric(horizontal: 5.w),
           scrollDirection: Axis.horizontal,
           physics: const BouncingScrollPhysics(),
           itemBuilder: (context, index) {
@@ -63,6 +63,58 @@ class HomeShimmerComponents {
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Top image area
+                    Container(
+                      height: 120.h,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.6),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20.r),
+                          topRight: Radius.circular(20.r),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.all(12.r),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Title placeholder
+                          Container(
+                            height: 18.h,
+                            width: 200.w,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.6),
+                              borderRadius: BorderRadius.circular(4.r),
+                            ),
+                          ),
+                          SizedBox(height: 8.h),
+                          // Description placeholder
+                          Container(
+                            height: 10.h,
+                            width: 250.w,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.6),
+                              borderRadius: BorderRadius.circular(4.r),
+                            ),
+                          ),
+                          SizedBox(height: 4.h),
+                          Container(
+                            height: 10.h,
+                            width: 150.w,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.6),
+                              borderRadius: BorderRadius.circular(4.r),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             );
@@ -86,6 +138,73 @@ class HomeShimmerComponents {
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.5),
                   borderRadius: BorderRadius.circular(20.r),
+                ),
+                child: Row(
+                  children: [
+                    // Left image placeholder
+                    Container(
+                      width: 120.w,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.6),
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(20.r),
+                          bottomLeft: Radius.circular(20.r),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 12.w),
+                    // Right content
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(vertical: 15.h),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            // Title placeholder
+                            Container(
+                              height: 16.h,
+                              width: 150.w,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.6),
+                                borderRadius: BorderRadius.circular(4.r),
+                              ),
+                            ),
+                            SizedBox(height: 10.h),
+                            // Description placeholder (2 lines)
+                            Container(
+                              height: 10.h,
+                              width: 180.w,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.6),
+                                borderRadius: BorderRadius.circular(4.r),
+                              ),
+                            ),
+                            SizedBox(height: 5.h),
+                            Container(
+                              height: 10.h,
+                              width: 140.w,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.6),
+                                borderRadius: BorderRadius.circular(4.r),
+                              ),
+                            ),
+                            SizedBox(height: 12.h),
+                            // Date/tag placeholder
+                            Container(
+                              height: 10.h,
+                              width: 80.w,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.6),
+                                borderRadius: BorderRadius.circular(4.r),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: 15.w),
+                  ],
                 ),
               ),
             );

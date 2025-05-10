@@ -136,7 +136,7 @@ class _TasksScreenState extends State<TasksScreen>
 
                   // Tasks List
                   Expanded(
-                    child: state is TasksLoading
+                    child: state is TasksLoading || state is GetAllTasksFromApiLoading
                         ? _buildLoadingIndicator()
                         : TasksCubit.get(context).tasks.isEmpty
                             ? _buildEmptyState()
@@ -666,7 +666,7 @@ class _TasksScreenState extends State<TasksScreen>
                           Icon(Icons.refresh,
                               color: Colors.orange, size: 18.sp),
                           SizedBox(width: 8.w),
-                          Text(
+                          const Text(
                             'Mark as active',
                             style: TextStyle(color: Colors.white),
                           ),
@@ -838,39 +838,47 @@ class _TasksScreenState extends State<TasksScreen>
     return BlocBuilder<TasksCubit, TasksState>(
       builder: (context, state) {
         final tasksCubit = context.read<TasksCubit>();
-        
+
         if (state is GetAllTasksFromApiLoading) {
           return _buildLoadingIndicator();
         }
-        
+
         if (tasksCubit.tasks.isEmpty) {
           return _buildEmptyState();
         }
-        
+
         return AnimationLimiter(
-          child: ListView.builder(
-            padding: EdgeInsets.symmetric(horizontal: 16.w),
-            physics: const BouncingScrollPhysics(),
-            itemCount: tasksCubit.tasks.length,
-            itemBuilder: (context, index) {
-              final task = tasksCubit.tasks[index];
-              return AnimationConfiguration.staggeredList(
-                position: index,
-                duration: const Duration(milliseconds: 375),
-                child: SlideAnimation(
-                  verticalOffset: 50.0,
-                  child: FadeInAnimation(
-                    child: _buildCommitteeTaskItem(context, task),
-                  ),
-                ),
-              );
+          child: RefreshIndicator(
+            onRefresh: ()async{
+              await TasksCubit.get(context).getTasksFromApi();
             },
+            child: ListView.builder(
+              padding: EdgeInsets.symmetric(horizontal: 16.w),
+              physics:
+              const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
+              ),
+              itemCount: tasksCubit.tasks.length,
+              itemBuilder: (context, index) {
+                final task = tasksCubit.tasks[index];
+                return AnimationConfiguration.staggeredList(
+                  position: index,
+                  duration: const Duration(milliseconds: 375),
+                  child: SlideAnimation(
+                    verticalOffset: 50.0,
+                    child: FadeInAnimation(
+                      child: _buildCommitteeTaskItem(context, task),
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         );
       },
     );
   }
-  
+
   Widget _buildCommitteeTaskItem(BuildContext context, TasksModel task) {
     // Format date if available
     String formattedDate = '';
@@ -882,7 +890,7 @@ class _TasksScreenState extends State<TasksScreen>
         formattedDate = task.date ?? 'No date';
       }
     }
-    
+
     return Container(
       margin: EdgeInsets.only(bottom: 16.h),
       decoration: BoxDecoration(
@@ -986,7 +994,7 @@ class _TasksScreenState extends State<TasksScreen>
               ],
             ),
           ),
-          
+
           // Resource link if available
           if (task.link != null && task.link!.isNotEmpty)
             Padding(
@@ -1027,13 +1035,13 @@ class _TasksScreenState extends State<TasksScreen>
       ),
     );
   }
-  
+
   String _formatCommitteeTaskDate(DateTime date) {
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
     final tomorrow = today.add(const Duration(days: 1));
     final taskDate = DateTime(date.year, date.month, date.day);
-    
+
     if (taskDate.isAtSameMomentAs(today)) {
       return 'Today';
     } else if (taskDate.isAtSameMomentAs(tomorrow)) {

@@ -44,6 +44,7 @@ class CommitteesCard extends StatelessWidget {
                     children: [
                       CircleAvatar(
                         radius: 50.0.r,
+                        backgroundColor: Colors.black26,
                         backgroundImage:  cubit.committeeList[index].img != null && cubit.committeeList[index].img != '' ? CachedNetworkImageProvider(
                           cubit.committeeList[index].img ?? '',
                         ) :  const AssetImage(

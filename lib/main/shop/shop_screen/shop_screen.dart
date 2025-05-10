@@ -290,6 +290,7 @@ class _ShopScreenState extends State<ShopScreen> {
             children: [
               const BackGround(),
               SafeArea(
+                bottom: false,
                 child: _buildContent(context, shopCubit),
               ),
             ],
@@ -323,63 +324,73 @@ class _ShopScreenState extends State<ShopScreen> {
       return loading();
     }
 
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.symmetric(
-        horizontal: horizontalPadding,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const DrawerIcon(),
-              SizedBox(width: screenWidth * 0.02), // 2% of screen width
-              Text(
-                'Shop',
-                style: TextStyle(
-                  fontSize: screenWidth < 600 ? 28 : 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+    return RefreshIndicator(
+      onRefresh: ()async {
+         await ShopCubit.get(context).getAllCollections();
+       await  ShopCubit.get(context).getAllProducts();
+        },
+      child: SingleChildScrollView(
+        physics:
+        const AlwaysScrollableScrollPhysics(
+          parent: BouncingScrollPhysics(),
+        ),
+        padding: EdgeInsets.symmetric(
+          horizontal: horizontalPadding,
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Gap15(),
+            Row(
+              children: [
+                const DrawerIcon(),
+                const Gap10(isHorizontal: true,),
+                Text(
+                  'Shop',
+                  style: TextStyle(
+                    fontSize: screenWidth < 600 ? 28 : 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
+              ],
+            ),
+            SizedBox(height: screenHeight * 0.02),
+
+            // Collections section
+            Text(
+              'Collections',
+              style: TextStyle(
+                fontSize: screenWidth < 600 ? 22 : 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
               ),
-            ],
-          ),
-          SizedBox(height: screenHeight * 0.02),
-
-          // Collections section
-          Text(
-            'Collections',
-            style: TextStyle(
-              fontSize: screenWidth < 600 ? 22 : 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
             ),
-          ),
-          SizedBox(height: screenHeight * 0.01),
-          shopCubit.allCollections.isEmpty
-              ? _buildEmptyState("No Collections Available",
-                  "There are currently no collections to display.")
-              : _buildCollectionsSection(shopCubit.allCollections, screenWidth),
+            SizedBox(height: screenHeight * 0.01),
+            shopCubit.allCollections.isEmpty
+                ? _buildEmptyState("No Collections Available",
+                    "There are currently no collections to display.")
+                : _buildCollectionsSection(shopCubit.allCollections, screenWidth),
 
-          SizedBox(height: screenHeight * 0.03),
+            SizedBox(height: screenHeight * 0.03),
 
-          // Products section
-          Text(
-            'All Products',
-            style: TextStyle(
-              fontSize: screenWidth < 600 ? 22 : 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
+            // Products section
+            Text(
+              'All Products',
+              style: TextStyle(
+                fontSize: screenWidth < 600 ? 22 : 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
-          ),
-          SizedBox(height: screenHeight * 0.01),
-          shopCubit.allProducts.isEmpty
-              ? _buildEmptyState("No Products Available",
-                  "There are currently no products to display.")
-              : _buildProductsGrid(
-                  shopCubit.allProducts, crossAxisCount, screenWidth),
-        ],
+            SizedBox(height: screenHeight * 0.01),
+            shopCubit.allProducts.isEmpty
+                ? _buildEmptyState("No Products Available",
+                    "There are currently no products to display.")
+                : _buildProductsGrid(
+                    shopCubit.allProducts, crossAxisCount, screenWidth),
+          ],
+        ),
       ),
     );
   }

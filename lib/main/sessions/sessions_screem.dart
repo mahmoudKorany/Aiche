@@ -106,7 +106,9 @@ class _SessionsScreenState extends State<SessionsScreen> {
                         }
                         
                         return ListView.builder(
-                          physics: const BouncingScrollPhysics(),
+                          physics: const AlwaysScrollableScrollPhysics(
+                            parent: BouncingScrollPhysics(),
+                          ),
                           padding: EdgeInsets.zero,
                           itemCount: sessions.length,
                           itemBuilder: (context, index) {

@@ -77,6 +77,7 @@ class AllCommitteesScreen extends StatelessWidget {
                     mainAxisSpacing: 15.h,
                   ),
                   itemCount: cubit.committeeList.length,
+                  physics: const BouncingScrollPhysics(),
                   itemBuilder: (context, index) {
                     return GestureDetector(
                       onTap: () {
@@ -103,10 +104,12 @@ class AllCommitteesScreen extends StatelessWidget {
                           children: [
                             CircleAvatar(
                               radius: 45.r,
-                              backgroundColor: Colors.white,
-                              backgroundImage: CachedNetworkImageProvider(
+                              backgroundColor: Colors.black26,
+                              backgroundImage:  cubit.committeeList[index].img != null && cubit.committeeList[index].img != '' ? CachedNetworkImageProvider(
                                 cubit.committeeList[index].img ?? '',
-                              ),
+                              ) :  const AssetImage(
+                                'assets/images/committee.jpg',
+                              ) as ImageProvider,
                             ),
                             SizedBox(height: 15.h),
                             Padding(

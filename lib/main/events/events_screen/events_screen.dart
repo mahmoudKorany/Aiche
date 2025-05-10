@@ -71,7 +71,10 @@ class EventsScreen extends StatelessWidget {
                             : cubit.events.isEmpty
                                 ? _buildEmptyState()
                                 : ListView.builder(
-                                    physics: const BouncingScrollPhysics(),
+                                    physics:
+                                        const AlwaysScrollableScrollPhysics(
+                                      parent: BouncingScrollPhysics(),
+                                    ),
                                     padding: EdgeInsets.only(top: 10.0.h),
                                     itemCount: cubit.events.length,
                                     itemBuilder: (context, index) {

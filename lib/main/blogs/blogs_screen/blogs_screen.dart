@@ -76,17 +76,90 @@ class BlogsScreen extends StatelessWidget {
       child: Shimmer.fromColors(
         baseColor: Colors.grey[300]!.withOpacity(0.5),
         highlightColor: Colors.grey[100]!.withOpacity(0.5),
-        child: ListView.builder(
+        child: ListView.separated(
           itemCount: 5,
-          physics: const BouncingScrollPhysics(),
-          itemBuilder: (_, __) => Padding(
-            padding: EdgeInsets.symmetric(vertical: 8.0.r),
-            child: Container(
-              height: 120.h,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.5),
-                borderRadius: BorderRadius.circular(15.r),
+          physics: const AlwaysScrollableScrollPhysics(
+            parent: BouncingScrollPhysics(),
+          ),
+          padding: EdgeInsets.zero,
+          separatorBuilder: (context, index) => SizedBox(height: 15.h),
+          itemBuilder: (_, __) => Container(
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(20.r),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.1),
+                width: 1,
               ),
+            ),
+            padding: EdgeInsets.all(16.w),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    // Avatar shimmer
+                    Container(
+                      width: 44.r,
+                      height: 44.r,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                    SizedBox(width: 5.w),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Author name shimmer
+                          Container(
+                            height: 16.h,
+                            width: 100.w,
+                            color: Colors.white,
+                          ),
+                          SizedBox(height: 4.h),
+                          // Metadata row shimmer
+                          Row(
+                            children: [
+                              Container(
+                                height: 12.h,
+                                width: 80.w,
+                                color: Colors.white,
+                              ),
+                              SizedBox(width: 10.w),
+                              Container(
+                                height: 20.h,
+                                width: 60.w,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12.r),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 5.h),
+                // Content shimmer - multiple lines
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: List.generate(
+                    4,
+                    (index) => Padding(
+                      padding: EdgeInsets.only(top: index > 0 ? 5.h : 0),
+                      child: Container(
+                        height: 13.h,
+                        width: double.infinity,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
