@@ -4,6 +4,7 @@ import 'package:aiche/auth/auth_cubit/auth_state.dart';
 import 'package:aiche/auth/profile/profile_screen.dart';
 import 'package:aiche/core/shared/components/gaps.dart';
 import 'package:aiche/core/shared/functions/functions.dart';
+import 'package:aiche/main/material/material_screen.dart';
 import 'package:aiche/main/sessions/sessions_screem.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:conditional_builder_null_safety/conditional_builder_null_safety.dart';
@@ -248,7 +249,7 @@ class _CustomDrawerState extends State<CustomDrawer>
           icon: Icons.library_books,
           title: 'Materials',
           onTap: () {
-            // TODO: Navigate to materials
+            navigateTo(context: context, widget: const MaterialScreen());
           },
         ),
         _buildMenuItem(

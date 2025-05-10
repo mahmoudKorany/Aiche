@@ -194,9 +194,9 @@ class _MaterialScreenState extends State<MaterialScreen>
                   ),
                   elevation: 0,
                   centerTitle: true,
-                  leading: IconButton(
-                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-                    onPressed: () => Navigator.pop(context),
+                  leading: Padding(
+                    padding:  EdgeInsets.all(8.0.r),
+                    child: const Pop(),
                   ),
                   systemOverlayStyle: SystemUiOverlayStyle.light,
                 ),
