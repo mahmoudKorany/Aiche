@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-//import 'package:pretty_dio_logger/pretty_dio_logger.dart';
+import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import '../../shared/constants/url_constants.dart';
 
 class DioHelper {
@@ -39,7 +39,7 @@ class DioHelper {
                   })
             : Options(
                 method: 'POST', headers: {'Content-Type': 'application/json'}));
-   //addInterceptors();
+   addInterceptors();
     return response;
   }
 
@@ -53,7 +53,7 @@ class DioHelper {
       'Authorization': 'Bearer $token',
       'Cookie': token,
     };
-  // addInterceptors();
+   addInterceptors();
     return await dio!.get(
       url,
       queryParameters: query,
@@ -71,7 +71,7 @@ class DioHelper {
     required String token,
   }) async {
     var headers = {'Authorization': 'Bearer $token'};
-    //addInterceptors();
+    addInterceptors();
     return dio!.request(
       url,
       options: Options(
@@ -91,7 +91,7 @@ class DioHelper {
       'Authorization': 'Bearer $token',
       'Cookie': token,
     };
-   // addInterceptors();
+    addInterceptors();
     return dio!.request(
       url,
       options: Options(
@@ -103,16 +103,16 @@ class DioHelper {
   }
 
   /// put request
-  // static void addInterceptors( ) {
-  //   dio!.interceptors.add(
-  //     PrettyDioLogger(
-  //       requestHeader: true,
-  //       requestBody: true,
-  //       responseBody: true,
-  //       responseHeader: false,
-  //       error: true,
-  //       compact: true,
-  //     ),
-  //   );
-  // }
+  static void addInterceptors( ) {
+    dio!.interceptors.add(
+      PrettyDioLogger(
+        requestHeader: true,
+        requestBody: true,
+        responseBody: true,
+        responseHeader: false,
+        error: true,
+        compact: true,
+      ),
+    );
+  }
 }

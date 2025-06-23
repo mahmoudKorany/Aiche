@@ -281,7 +281,6 @@ class AuthCubit extends Cubit<AuthState> {
 
       // Get ID token to send to backend
       final String? idToken = googleAuth.idToken;
-
       if (idToken == null) {
         emit(AuthError("Failed to get Google ID token"));
         return;
@@ -299,10 +298,11 @@ class AuthCubit extends Cubit<AuthState> {
       final response = await DioHelper.postData(
         url: UrlConstants.signWithGoogle,
         data: {
-          "token": idToken,
+          "id_token": idToken,
           "fcm_token": fcmToken ?? 'no token ${DateTime.now().toString()}'
         },
       );
+
 
       if (response.statusCode == 200) {
         try {
