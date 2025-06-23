@@ -373,8 +373,8 @@ class _LoginScreenState extends State<LoginScreen>
                                     ),
                                     elevation: 30,
                                     onPressed: () {
-                                      // AuthCubit.get(context)
-                                      //     .signInWithGoogle(context);
+                                      AuthCubit.get(context)
+                                          .signInWithGoogle(context);
                                     },
                                   ),
                                 ),

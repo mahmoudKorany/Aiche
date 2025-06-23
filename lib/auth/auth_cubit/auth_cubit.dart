@@ -19,7 +19,7 @@ import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-//import 'package:google_sign_in/google_sign_in.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthCubit extends Cubit<AuthState> {
   AuthCubit() : super(AuthInitial());
@@ -229,8 +229,7 @@ class AuthCubit extends Cubit<AuthState> {
     required String? bio,
     required String? phone,
     required String? linkedInLink,
-  }) async
-  {
+  }) async {
     emit(UpdateUserDataLoading());
 
     try {
@@ -260,85 +259,84 @@ class AuthCubit extends Cubit<AuthState> {
     }
   }
 
-  // Future<void> signInWithGoogle(BuildContext context) async
-  // {
-  //   emit(AuthLoading());
-  //
-  //   try {
-  //     // Initialize Google Sign In
-  //     final GoogleSignIn googleSignIn = GoogleSignIn();
-  //
-  //     // Begin the sign-in process
-  //     final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-  //
-  //     // If user cancels the sign-in process
-  //     if (googleUser == null) {
-  //       emit(AuthError("Google Sign In cancelled"));
-  //       return;
-  //     }
-  //
-  //     // Get authentication details
-  //     final GoogleSignInAuthentication googleAuth =
-  //         await googleUser.authentication;
-  //
-  //     // Get ID token to send to backend
-  //     final String? idToken = googleAuth.idToken;
-  //
-  //     if (idToken == null) {
-  //       emit(AuthError("Failed to get Google ID token"));
-  //       return;
-  //     }
-  //
-  //     // Get FCM token for notifications
-  //     String? fcmToken;
-  //     try {
-  //       fcmToken = await FirebaseMessaging.instance.getToken();
-  //     } catch (e) {
-  //       // Continue with Google sign in even if we can't get FCM token
-  //     }
-  //
-  //     // Make API call to sign in with Google using the ID token
-  //     final response = await DioHelper.postData(
-  //       url: UrlConstants.signWithGoogle,
-  //       data: {
-  //         "token": idToken,
-  //         "fcm_token": fcmToken ?? 'no token ${DateTime.now().toString()}'
-  //       },
-  //     );
-  //
-  //     if (response.statusCode == 200) {
-  //       try {
-  //         if (response.data != null &&
-  //             response.data is Map &&
-  //             response.data['token'] != null) {
-  //           final tokenValue = response.data['token']?.toString();
-  //           await CacheHelper.saveData(key: 'token', value: tokenValue);
-  //         }
-  //
-  //         // Load all necessary data after successful sign in
-  //         await BlogsCubit.get(context).getBlogs();
-  //         await LayoutCubit.get(context).getHomeBanner();
-  //         await LayoutCubit.get(context).getAwards();
-  //         await LayoutCubit.get(context).getMaterial();
-  //         await EventsCubit.get(context).fetchEvents();
-  //         await ShopCubit.get(context).getAllCollections();
-  //         await ShopCubit.get(context).getAllProducts();
-  //         await CommitteeCubit.get(context).getCommitteeData();
-  //
-  //         emit(AuthSuccess());
-  //         await getUserData();
-  //         navigateAndFinish(context: context, widget: const HomeLayoutScreen());
-  //         showToast(msg: 'Google Sign In Successful', state: MsgState.success);
-  //       } catch (e) {
-  //         emit(AuthError("Error processing Google sign in response"));
-  //       }
-  //     } else {
-  //       emit(AuthError(response.data.toString()));
-  //     }
-  //   } catch (e) {
-  //     showToast(
-  //         msg: 'Google Sign In Failed: ${e.toString()}', state: MsgState.error);
-  //     emit(AuthError(e.toString()));
-  //   }
-  // }
+  Future<void> signInWithGoogle(BuildContext context) async {
+    emit(AuthLoading());
+
+    try {
+      // Initialize Google Sign In
+      final GoogleSignIn googleSignIn = GoogleSignIn();
+
+      // Begin the sign-in process
+      final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
+
+      // If user cancels the sign-in process
+      if (googleUser == null) {
+        emit(AuthError("Google Sign In cancelled"));
+        return;
+      }
+
+      // Get authentication details
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      // Get ID token to send to backend
+      final String? idToken = googleAuth.idToken;
+
+      if (idToken == null) {
+        emit(AuthError("Failed to get Google ID token"));
+        return;
+      }
+
+      // Get FCM token for notifications
+      String? fcmToken;
+      try {
+        fcmToken = await FirebaseMessaging.instance.getToken();
+      } catch (e) {
+        // Continue with Google sign in even if we can't get FCM token
+      }
+
+      // Make API call to sign in with Google using the ID token
+      final response = await DioHelper.postData(
+        url: UrlConstants.signWithGoogle,
+        data: {
+          "token": idToken,
+          "fcm_token": fcmToken ?? 'no token ${DateTime.now().toString()}'
+        },
+      );
+
+      if (response.statusCode == 200) {
+        try {
+          if (response.data != null &&
+              response.data is Map &&
+              response.data['token'] != null) {
+            final tokenValue = response.data['token']?.toString();
+            await CacheHelper.saveData(key: 'token', value: tokenValue);
+          }
+
+          // Load all necessary data after successful sign in
+          await BlogsCubit.get(context).getBlogs();
+          await LayoutCubit.get(context).getHomeBanner();
+          await LayoutCubit.get(context).getAwards();
+          await LayoutCubit.get(context).getMaterial();
+          await EventsCubit.get(context).fetchEvents();
+          await ShopCubit.get(context).getAllCollections();
+          await ShopCubit.get(context).getAllProducts();
+          await CommitteeCubit.get(context).getCommitteeData();
+
+          emit(AuthSuccess());
+          await getUserData();
+          navigateAndFinish(context: context, widget: const HomeLayoutScreen());
+          showToast(msg: 'Google Sign In Successful', state: MsgState.success);
+        } catch (e) {
+          emit(AuthError("Error processing Google sign in response"));
+        }
+      } else {
+        emit(AuthError(response.data.toString()));
+      }
+    } catch (e) {
+      showToast(
+          msg: 'Google Sign In Failed: ${e.toString()}', state: MsgState.error);
+      emit(AuthError(e.toString()));
+    }
+  }
 }

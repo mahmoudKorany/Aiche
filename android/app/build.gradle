@@ -94,6 +94,8 @@ flutter {
 dependencies {
     implementation platform('com.google.firebase:firebase-bom:33.5.1')
     implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.firebase:firebase-auth'
+    implementation 'com.google.android.gms:play-services-auth:21.0.0'
     implementation 'io.branch.sdk.android:library:5.12.4'
     implementation 'store.galaxy.samsung.installreferrer:samsung_galaxystore_install_referrer:4.0.0'
     implementation 'com.google.android.gms:play-services-ads-identifier:18.1.0'
@@ -104,22 +106,3 @@ dependencies {
     implementation 'androidx.window:window:1.1.0'
     implementation 'androidx.window:window-java:1.1.0'
 }
-
-
-// Automation and Smart Mining:
-// Rio Tinto and BHP autonomous mining case studies
-// Fresnillo plc remote operations centers in Mexican silver mines
-// Industry reports on smart ventilation systems in underground mining
-// AI and Machine Learning in Ore Analysis:
-// Research from the article "Real-time ore sorting using color and texture analysis" (Science Direct)
-// Goldspot Discoveries and IBM AI exploration platforms
-// Case study of AI optimization in a Peruvian silver mine
-// Bioleaching and Eco-friendly Technologies:
-// BacTech Environmental Corporation's bioleaching technology
-// Research on thiosulfate and glycine leaching as cyanide alternatives
-// Cannington silver mine solar power implementation case study
-// Innovations in Waste Management and Recycling:
-// Greens Creek mine (Alaska) dry stacking implementation
-// Pueblo Viejo mine tailings reprocessing project
-// Umicore's integrated precious metal recycling from e-waste
-// Industry data on carbon footprint reduction through urban mining
