@@ -7,7 +7,7 @@ class UrlConstants {
   static const String login = 'login';
   static const String register = 'register';
   static const String getUserDetails = 'profile';
-  static const String signWithGoogle = 'login/google';
+  static const String signWithGoogle = 'login/google/callback';
   //logout
   static const String logout = 'logout';
   //update
