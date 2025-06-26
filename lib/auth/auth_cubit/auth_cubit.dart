@@ -29,7 +29,8 @@ class AuthCubit extends Cubit<AuthState> {
 
   // login
   Future<void> login(
-      String email, String password, BuildContext context) async {
+      String email, String password, BuildContext context) async
+  {
     emit(AuthLoading());
     String? fcmToken;
     try {
@@ -57,16 +58,18 @@ class AuthCubit extends Cubit<AuthState> {
             final tokenValue = response.data['token']?.toString();
             await CacheHelper.saveData(key: 'token', value: tokenValue);
           }
-          await TasksCubit.get(context).getTasksFromApi();
-          await BlogsCubit.get(context).getBlogs();
-          await LayoutCubit.get(context).getHomeBanner();
-          await LayoutCubit.get(context).getAwards();
-          await LayoutCubit.get(context).getMaterial();
-          await EventsCubit.get(context).fetchEvents();
-          await ShopCubit.get(context).getAllCollections();
-          await ShopCubit.get(context).getAllProducts();
-          await CommitteeCubit.get(context).getCommitteeData();
-          await getUserData();
+          Future.wait([
+           TasksCubit.get(context).getTasksFromApi(),
+           BlogsCubit.get(context).getBlogs(),
+           LayoutCubit.get(context).getHomeBanner(),
+           LayoutCubit.get(context).getAwards(),
+           LayoutCubit.get(context).getMaterial(),
+           EventsCubit.get(context).fetchEvents(),
+           ShopCubit.get(context).getAllCollections(),
+           ShopCubit.get(context).getAllProducts(),
+           CommitteeCubit.get(context).getCommitteeData(),
+           getUserData(),
+          ]);
           emit(AuthSuccess());
           navigateAndFinish(context: context, widget: const HomeLayoutScreen());
           showToast(msg: 'Login done Successfully', state: MsgState.success);
@@ -106,16 +109,18 @@ class AuthCubit extends Cubit<AuthState> {
       });
       await CacheHelper.saveData(key: 'token', value: response.data['token'])
           .then((v) async {});
-      await BlogsCubit.get(context).getBlogs();
-      await TasksCubit.get(context).getTasksFromApi();
-      await LayoutCubit.get(context).getHomeBanner();
-      await LayoutCubit.get(context).getAwards();
-      await LayoutCubit.get(context).getMaterial();
-      await ShopCubit.get(context).getAllCollections();
-      await ShopCubit.get(context).getAllProducts();
-      await getUserData();
-      await EventsCubit.get(context).fetchEvents();
-      await CommitteeCubit.get(context).getCommitteeData();
+   Future.wait ([
+    BlogsCubit.get(context).getBlogs(),
+       TasksCubit.get(context).getTasksFromApi(),
+       LayoutCubit.get(context).getHomeBanner(),
+       LayoutCubit.get(context).getAwards(),
+       LayoutCubit.get(context).getMaterial(),
+       ShopCubit.get(context).getAllCollections(),
+       ShopCubit.get(context).getAllProducts(),
+       getUserData(),
+       EventsCubit.get(context).fetchEvents(),
+       CommitteeCubit.get(context).getCommitteeData(),
+      ]);
       navigateAndFinish(
         context: context,
         widget: const HomeLayoutScreen(),
@@ -163,7 +168,7 @@ class AuthCubit extends Cubit<AuthState> {
       );
       //print(response.data);
       if (response.statusCode == 200) {
-        navigateAndFinish(context: context, widget: LoginScreen());
+        navigateAndFinish(context: context, widget: const LoginScreen());
         showToast(msg: 'Logout done Successfully', state: MsgState.success);
         await CacheHelper.removeData(key: 'token');
         emit(AuthLogoutSuccess());
@@ -314,14 +319,16 @@ class AuthCubit extends Cubit<AuthState> {
           }
 
           // Load all necessary data after successful sign in
-          await BlogsCubit.get(context).getBlogs();
-          await LayoutCubit.get(context).getHomeBanner();
-          await LayoutCubit.get(context).getAwards();
-          await LayoutCubit.get(context).getMaterial();
-          await EventsCubit.get(context).fetchEvents();
-          await ShopCubit.get(context).getAllCollections();
-          await ShopCubit.get(context).getAllProducts();
-          await CommitteeCubit.get(context).getCommitteeData();
+          Future.wait([
+           BlogsCubit.get(context).getBlogs(),
+           LayoutCubit.get(context).getHomeBanner(),
+           LayoutCubit.get(context).getAwards(),
+           LayoutCubit.get(context).getMaterial(),
+           EventsCubit.get(context).fetchEvents(),
+           ShopCubit.get(context).getAllCollections(),
+           ShopCubit.get(context).getAllProducts(),
+           CommitteeCubit.get(context).getCommitteeData(),
+          ]);
 
           emit(AuthGoogleSuccess());
           await getUserData();
