@@ -12,6 +12,14 @@ final class AuthError extends AuthState {
   AuthError(this.error);
 }
 
+final class AuthGoogleLoading extends AuthState {}
+
+final class AuthGoogleSuccess extends AuthState {}
+
+final class AuthGoogleError extends AuthState {
+  final String error;
+  AuthGoogleError(this.error);
+}
 final class GetUserDataLoading extends AuthState {}
 
 final class GetUserDataSuccess extends AuthState {}

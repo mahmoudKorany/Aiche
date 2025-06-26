@@ -1,6 +1,6 @@
 class UrlConstants {
   static const String baseUrl =
-      'https://aiche.koyeb.app/api/';
+      'https://backend.aichesusc.org/api/';
 
   //user
 

@@ -38,6 +38,7 @@ class AuthCubit extends Cubit<AuthState> {
       //debugPrint("Could not get FCM token: $e");
       // Continue with login even if we can't get FCM token
     }
+    print("FCM Token: $fcmToken");
     try {
       final response = await DioHelper.postData(
         url: UrlConstants.login,
@@ -260,7 +261,7 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> signInWithGoogle(BuildContext context) async {
-    emit(AuthLoading());
+    emit(AuthGoogleLoading());
 
     try {
       // Initialize Google Sign In
@@ -271,7 +272,7 @@ class AuthCubit extends Cubit<AuthState> {
 
       // If user cancels the sign-in process
       if (googleUser == null) {
-        emit(AuthError("Google Sign In cancelled"));
+        emit(AuthGoogleError("Google Sign In cancelled"));
         return;
       }
 
@@ -282,7 +283,7 @@ class AuthCubit extends Cubit<AuthState> {
       // Get ID token to send to backend
       final String? idToken = googleAuth.idToken;
       if (idToken == null) {
-        emit(AuthError("Failed to get Google ID token"));
+        emit(AuthGoogleError("Failed to get Google ID token"));
         return;
       }
 
@@ -323,20 +324,20 @@ class AuthCubit extends Cubit<AuthState> {
           await ShopCubit.get(context).getAllProducts();
           await CommitteeCubit.get(context).getCommitteeData();
 
-          emit(AuthSuccess());
+          emit(AuthGoogleSuccess());
           await getUserData();
           navigateAndFinish(context: context, widget: const HomeLayoutScreen());
           showToast(msg: 'Google Sign In Successful', state: MsgState.success);
         } catch (e) {
-          emit(AuthError("Error processing Google sign in response"));
+          emit(AuthGoogleError("Error processing Google sign in response"));
         }
       } else {
-        emit(AuthError(response.data.toString()));
+        emit(AuthGoogleError(response.data.toString()));
       }
     } catch (e) {
       showToast(
           msg: 'Google Sign In Failed: ${e.toString()}', state: MsgState.error);
-      emit(AuthError(e.toString()));
+      emit(AuthGoogleError(e.toString()));
     }
   }
 }
