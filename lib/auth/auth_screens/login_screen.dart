@@ -46,7 +46,13 @@ class _LoginScreenState extends State<LoginScreen>
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AuthCubit, AuthState>(
-      listener: (context, state) {},
+      listener: (context, state) {
+        if (state is AuthGoogleError) {
+          showToast(msg: state.error, state: MsgState.error);
+        } else if (state is AuthGoogleSuccess) {
+          showToast(msg: 'Google Sign In Successful', state: MsgState.success);
+        }
+      },
       builder: (context, state) {
         return Scaffold(
           backgroundColor: Colors.white,
@@ -366,16 +372,56 @@ class _LoginScreenState extends State<LoginScreen>
                                       ),
                                     ],
                                   ),
-                                  child: SignInButton(
-                                    Buttons.google,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12.r),
+                                  child: ConditionalBuilder(
+                                    condition: state is! AuthGoogleLoading,
+                                    builder: (context) => SignInButton(
+                                      Buttons.google,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius:
+                                            BorderRadius.circular(12.r),
+                                      ),
+                                      elevation: 30,
+                                      onPressed: () {
+                                        AuthCubit.get(context)
+                                            .signInWithGoogle(context);
+                                      },
                                     ),
-                                    elevation: 30,
-                                    onPressed: () {
-                                      AuthCubit.get(context)
-                                          .signInWithGoogle(context);
-                                    },
+                                    fallback: (context) => Container(
+                                      height: 50.h,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white,
+                                        borderRadius:
+                                            BorderRadius.circular(12.r),
+                                        border: Border.all(
+                                            color: Colors.grey.shade300),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          SizedBox(
+                                            width: 20.w,
+                                            height: 20.h,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                HexColor('0C0341'),
+                                              ),
+                                            ),
+                                          ),
+                                          SizedBox(width: 12.w),
+                                          Text(
+                                            'Signing in with Google...',
+                                            style: TextStyle(
+                                              color: Colors.grey.shade600,
+                                              fontSize: 16.sp,
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                 ),
                                 const Gap20(),

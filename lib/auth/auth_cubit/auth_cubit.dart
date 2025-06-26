@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:aiche/auth/auth_cubit/auth_state.dart';
 import 'package:aiche/auth/auth_screens/login_screen.dart';
@@ -8,6 +9,7 @@ import 'package:aiche/core/shared/constants/constants.dart';
 import 'package:aiche/core/shared/constants/url_constants.dart';
 import 'package:aiche/core/shared/functions/functions.dart';
 import 'package:aiche/core/utils/cache-helper/cache-helper.dart';
+import 'package:aiche/core/utils/google_signin_error_handler.dart';
 import 'package:aiche/main/blogs/blogs_cubit/blogs_cubit.dart';
 import 'package:aiche/main/committee/cubit/committee_cubit.dart';
 import 'package:aiche/main/events/events_cubit/events_cubit.dart';
@@ -29,8 +31,7 @@ class AuthCubit extends Cubit<AuthState> {
 
   // login
   Future<void> login(
-      String email, String password, BuildContext context) async
-  {
+      String email, String password, BuildContext context) async {
     emit(AuthLoading());
     String? fcmToken;
     try {
@@ -58,17 +59,17 @@ class AuthCubit extends Cubit<AuthState> {
             final tokenValue = response.data['token']?.toString();
             await CacheHelper.saveData(key: 'token', value: tokenValue);
           }
-          Future.wait([
-           TasksCubit.get(context).getTasksFromApi(),
-           BlogsCubit.get(context).getBlogs(),
-           LayoutCubit.get(context).getHomeBanner(),
-           LayoutCubit.get(context).getAwards(),
-           LayoutCubit.get(context).getMaterial(),
-           EventsCubit.get(context).fetchEvents(),
-           ShopCubit.get(context).getAllCollections(),
-           ShopCubit.get(context).getAllProducts(),
-           CommitteeCubit.get(context).getCommitteeData(),
-           getUserData(),
+          await Future.wait([
+            TasksCubit.get(context).getTasksFromApi(),
+            BlogsCubit.get(context).getBlogs(),
+            LayoutCubit.get(context).getHomeBanner(),
+            LayoutCubit.get(context).getAwards(),
+            LayoutCubit.get(context).getMaterial(),
+            EventsCubit.get(context).fetchEvents(),
+            ShopCubit.get(context).getAllCollections(),
+            ShopCubit.get(context).getAllProducts(),
+            CommitteeCubit.get(context).getCommitteeData(),
+            getUserData(),
           ]);
           emit(AuthSuccess());
           navigateAndFinish(context: context, widget: const HomeLayoutScreen());
@@ -107,19 +108,19 @@ class AuthCubit extends Cubit<AuthState> {
         'password': password,
         "fcm_token": fcmToken ?? 'no token ${DateTime.now().toString()}'
       });
-      await CacheHelper.saveData(key: 'token', value: response.data['token'])
-          .then((v) async {});
-   Future.wait ([
-    BlogsCubit.get(context).getBlogs(),
-       TasksCubit.get(context).getTasksFromApi(),
-       LayoutCubit.get(context).getHomeBanner(),
-       LayoutCubit.get(context).getAwards(),
-       LayoutCubit.get(context).getMaterial(),
-       ShopCubit.get(context).getAllCollections(),
-       ShopCubit.get(context).getAllProducts(),
-       getUserData(),
-       EventsCubit.get(context).fetchEvents(),
-       CommitteeCubit.get(context).getCommitteeData(),
+      await CacheHelper.saveData(key: 'token', value: response.data['token']);
+
+      await Future.wait([
+        BlogsCubit.get(context).getBlogs(),
+        TasksCubit.get(context).getTasksFromApi(),
+        LayoutCubit.get(context).getHomeBanner(),
+        LayoutCubit.get(context).getAwards(),
+        LayoutCubit.get(context).getMaterial(),
+        ShopCubit.get(context).getAllCollections(),
+        ShopCubit.get(context).getAllProducts(),
+        getUserData(),
+        EventsCubit.get(context).fetchEvents(),
+        CommitteeCubit.get(context).getCommitteeData(),
       ]);
       navigateAndFinish(
         context: context,
@@ -269,8 +270,16 @@ class AuthCubit extends Cubit<AuthState> {
     emit(AuthGoogleLoading());
 
     try {
-      // Initialize Google Sign In
+      // Initialize Google Sign In with the new client configuration
       final GoogleSignIn googleSignIn = GoogleSignIn();
+
+      // Check if user is already signed in and sign out for clean state
+      if (await googleSignIn.isSignedIn()) {
+        await googleSignIn.signOut();
+      }
+
+      // Add a small delay to ensure clean state
+      await Future.delayed(const Duration(milliseconds: 500));
 
       // Begin the sign-in process
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
@@ -281,22 +290,33 @@ class AuthCubit extends Cubit<AuthState> {
         return;
       }
 
-      // Get authentication details
+      // Verify we have a valid user
+      if (googleUser.email.isEmpty) {
+        emit(AuthGoogleError("Failed to get user information from Google"));
+        return;
+      }
+
+      // Get authentication details with timeout
       final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+          await googleUser.authentication.timeout(const Duration(seconds: 30));
 
       // Get ID token to send to backend
       final String? idToken = googleAuth.idToken;
-      if (idToken == null) {
+      final String? accessToken = googleAuth.accessToken;
+
+      if (idToken == null || idToken.isEmpty) {
         emit(AuthGoogleError("Failed to get Google ID token"));
         return;
       }
 
-      // Get FCM token for notifications
+      // Get FCM token for notifications with better error handling
       String? fcmToken;
       try {
-        fcmToken = await FirebaseMessaging.instance.getToken();
+        fcmToken = await FirebaseMessaging.instance
+            .getToken()
+            .timeout(const Duration(seconds: 10));
       } catch (e) {
+        print("Warning: Could not get FCM token: $e");
         // Continue with Google sign in even if we can't get FCM token
       }
 
@@ -305,6 +325,9 @@ class AuthCubit extends Cubit<AuthState> {
         url: UrlConstants.signWithGoogle,
         data: {
           "id_token": idToken,
+          "access_token": accessToken,
+          "email": googleUser.email,
+          "name": googleUser.displayName ?? '',
           "fcm_token": fcmToken ?? 'no token ${DateTime.now().toString()}'
         },
       );
@@ -315,35 +338,55 @@ class AuthCubit extends Cubit<AuthState> {
               response.data is Map &&
               response.data['token'] != null) {
             final tokenValue = response.data['token']?.toString();
+            if (tokenValue == null || tokenValue.isEmpty) {
+              emit(AuthGoogleError("Invalid token received from server"));
+              return;
+            }
+
             await CacheHelper.saveData(key: 'token', value: tokenValue);
+          } else {
+            emit(AuthGoogleError("Invalid response from server"));
+            return;
           }
 
           // Load all necessary data after successful sign in
-          Future.wait([
-           BlogsCubit.get(context).getBlogs(),
-           LayoutCubit.get(context).getHomeBanner(),
-           LayoutCubit.get(context).getAwards(),
-           LayoutCubit.get(context).getMaterial(),
-           EventsCubit.get(context).fetchEvents(),
-           ShopCubit.get(context).getAllCollections(),
-           ShopCubit.get(context).getAllProducts(),
-           CommitteeCubit.get(context).getCommitteeData(),
-          ]);
+          await Future.wait([
+            BlogsCubit.get(context).getBlogs(),
+            LayoutCubit.get(context).getHomeBanner(),
+            LayoutCubit.get(context).getAwards(),
+            LayoutCubit.get(context).getMaterial(),
+            EventsCubit.get(context).fetchEvents(),
+            ShopCubit.get(context).getAllCollections(),
+            ShopCubit.get(context).getAllProducts(),
+            CommitteeCubit.get(context).getCommitteeData(),
+            TasksCubit.get(context).getTasksFromApi(),
+            getUserData(),
+          ]).timeout(const Duration(seconds: 30));
 
           emit(AuthGoogleSuccess());
-          await getUserData();
           navigateAndFinish(context: context, widget: const HomeLayoutScreen());
           showToast(msg: 'Google Sign In Successful', state: MsgState.success);
         } catch (e) {
-          emit(AuthGoogleError("Error processing Google sign in response"));
+          print("Error processing Google sign in response: $e");
+          emit(AuthGoogleError(
+              "Error processing Google sign in response: ${e.toString()}"));
         }
       } else {
-        emit(AuthGoogleError(response.data.toString()));
+        String errorMessage = "Google Sign In failed";
+        if (response.data != null &&
+            response.data is Map &&
+            response.data['message'] != null) {
+          errorMessage = response.data['message'].toString();
+        }
+        emit(AuthGoogleError(errorMessage));
       }
+    } on TimeoutException {
+      emit(AuthGoogleError('Google Sign In timed out. Please try again.'));
     } catch (e) {
-      showToast(
-          msg: 'Google Sign In Failed: ${e.toString()}', state: MsgState.error);
-      emit(AuthGoogleError(e.toString()));
+      String errorMessage = GoogleSignInErrorHandler.getErrorMessage(e);
+      print("Google Sign In Error: $errorMessage");
+      showToast(msg: errorMessage, state: MsgState.error);
+      emit(AuthGoogleError(errorMessage));
     }
   }
 }

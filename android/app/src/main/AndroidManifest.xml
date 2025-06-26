@@ -58,6 +58,12 @@
         <intent>
             <action android:name="android.support.customtabs.action.CustomTabsService" />
         </intent>
+        <!-- Google Sign-In related queries -->
+        <intent>
+            <action android:name="android.support.customtabs.action.CustomTabsService" />
+        </intent>
+        <package android:name="com.google.android.gms" />
+        <package android:name="com.android.chrome" />
     </queries>
 </manifest>
 

@@ -1,49 +1,42 @@
 {
   "project_info": {
-    "project_number": "398829340890",
-    "project_id": "notfication-a3dd6",
-    "storage_bucket": "notfication-a3dd6.firebasestorage.app"
+    "project_number": "673533378711",
+    "project_id": "ahiche-3ec5d",
+    "storage_bucket": "ahiche-3ec5d.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:398829340890:android:89fd4b325c13c08632bde3",
+        "mobilesdk_app_id": "1:673533378711:android:a97df779f6d726bf6b29d2",
         "android_client_info": {
           "package_name": "com.aiche.aiche"
         }
       },
       "oauth_client": [
         {
-          "client_id": "398829340890-9jbkhpcqj041attstub9drbqvskbos5k.apps.googleusercontent.com",
+          "client_id": "673533378711-vcrn4jbploj54888fphc68c5se0svfjg.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.aiche.aiche",
-            "certificate_hash": "2f5f26e13dfde21ae70e94c20b89ccad7a79d53a"
+            "certificate_hash": "dc2e1ca7261dabf4e3ca90264d241301f523bbd3"
           }
         },
         {
-          "client_id": "398829340890-jhtv2bv36m96okjiio62k4b2g0pq5mta.apps.googleusercontent.com",
+          "client_id": "673533378711-tii7gvf8tb8ie75u9rl1f1h01rfgf2jr.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAKMUDTNKfPeWQE1ub2q9G378546amGY7w"
+          "current_key": "AIzaSyB2ESvC8xv8oF-D9xDQiO1qpbHxNg-1BC8"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "398829340890-jhtv2bv36m96okjiio62k4b2g0pq5mta.apps.googleusercontent.com",
+              "client_id": "673533378711-tii7gvf8tb8ie75u9rl1f1h01rfgf2jr.apps.googleusercontent.com",
               "client_type": 3
-            },
-            {
-              "client_id": "398829340890-d8m4ni0qmsl1pbc1dhc19osf6u9ai6jh.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "com.aiche.aiche"
-              }
             }
           ]
         }
