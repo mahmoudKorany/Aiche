@@ -31,7 +31,8 @@ class AuthCubit extends Cubit<AuthState> {
 
   // login
   Future<void> login(
-      String email, String password, BuildContext context) async {
+      String email, String password, BuildContext context) async
+  {
     emit(AuthLoading());
     String? fcmToken;
     try {
@@ -90,7 +91,8 @@ class AuthCubit extends Cubit<AuthState> {
 
   // register
   Future<void> register(
-      String name, String email, String password, context) async {
+      String name, String email, String password, context) async
+  {
     emit(RegisterLoading());
     String? fcmToken;
     try {
@@ -192,7 +194,8 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> updateProfileImage({
     required BuildContext context,
     required File imageFile,
-  }) async {
+  }) async
+  {
     emit(UpdateProfileImageLoading());
     token = await CacheHelper.getData(key: 'token');
     try {
@@ -236,7 +239,8 @@ class AuthCubit extends Cubit<AuthState> {
     required String? bio,
     required String? phone,
     required String? linkedInLink,
-  }) async {
+  }) async
+  {
     emit(UpdateUserDataLoading());
 
     try {
