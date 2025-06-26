@@ -41,7 +41,6 @@ class AuthCubit extends Cubit<AuthState> {
       //debugPrint("Could not get FCM token: $e");
       // Continue with login even if we can't get FCM token
     }
-    print("FCM Token: $fcmToken");
     try {
       final response = await DioHelper.postData(
         url: UrlConstants.login,
@@ -60,6 +59,7 @@ class AuthCubit extends Cubit<AuthState> {
             final tokenValue = response.data['token']?.toString();
             await CacheHelper.saveData(key: 'token', value: tokenValue);
           }
+          await  getUserData();
           await Future.wait([
             TasksCubit.get(context).getTasksFromApi(),
             BlogsCubit.get(context).getBlogs(),
@@ -70,7 +70,6 @@ class AuthCubit extends Cubit<AuthState> {
             ShopCubit.get(context).getAllCollections(),
             ShopCubit.get(context).getAllProducts(),
             CommitteeCubit.get(context).getCommitteeData(),
-            getUserData(),
           ]);
           emit(AuthSuccess());
           navigateAndFinish(context: context, widget: const HomeLayoutScreen());
@@ -112,6 +111,7 @@ class AuthCubit extends Cubit<AuthState> {
       });
       await CacheHelper.saveData(key: 'token', value: response.data['token']);
 
+      await  getUserData();
       await Future.wait([
         BlogsCubit.get(context).getBlogs(),
         TasksCubit.get(context).getTasksFromApi(),
@@ -120,7 +120,6 @@ class AuthCubit extends Cubit<AuthState> {
         LayoutCubit.get(context).getMaterial(),
         ShopCubit.get(context).getAllCollections(),
         ShopCubit.get(context).getAllProducts(),
-        getUserData(),
         EventsCubit.get(context).fetchEvents(),
         CommitteeCubit.get(context).getCommitteeData(),
       ]);
@@ -139,6 +138,7 @@ class AuthCubit extends Cubit<AuthState> {
   }
 
   Future<void> getUserData() async {
+    token = await CacheHelper.getData(key: 'token');
     emit(AuthLoading1());
     try {
       final response = await DioHelper.getData(
@@ -306,7 +306,6 @@ class AuthCubit extends Cubit<AuthState> {
 
       // Get ID token to send to backend
       final String? idToken = googleAuth.idToken;
-      final String? accessToken = googleAuth.accessToken;
 
       if (idToken == null || idToken.isEmpty) {
         emit(AuthGoogleError("Failed to get Google ID token"));
@@ -329,9 +328,6 @@ class AuthCubit extends Cubit<AuthState> {
         url: UrlConstants.signWithGoogle,
         data: {
           "id_token": idToken,
-          "access_token": accessToken,
-          "email": googleUser.email,
-          "name": googleUser.displayName ?? '',
           "fcm_token": fcmToken ?? 'no token ${DateTime.now().toString()}'
         },
       );
@@ -352,8 +348,7 @@ class AuthCubit extends Cubit<AuthState> {
             emit(AuthGoogleError("Invalid response from server"));
             return;
           }
-
-          // Load all necessary data after successful sign in
+          await  getUserData();
           await Future.wait([
             BlogsCubit.get(context).getBlogs(),
             LayoutCubit.get(context).getHomeBanner(),
@@ -364,7 +359,7 @@ class AuthCubit extends Cubit<AuthState> {
             ShopCubit.get(context).getAllProducts(),
             CommitteeCubit.get(context).getCommitteeData(),
             TasksCubit.get(context).getTasksFromApi(),
-            getUserData(),
+
           ]).timeout(const Duration(seconds: 30));
 
           emit(AuthGoogleSuccess());
