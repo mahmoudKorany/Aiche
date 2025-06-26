@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 class NetworkConnectivityService {
@@ -37,36 +38,79 @@ class NetworkConnectivityService {
   Future<void> _checkConnectivity() async {
     try {
       final connectivityResults = await _connectivity.checkConnectivity();
-      _updateConnectionStatus(connectivityResults);
+      await _updateConnectionStatus(connectivityResults);
     } catch (e) {
       // debugPrint('Failed to check connectivity: $e');
-      _updateConnectionStatus([ConnectivityResult.none]);
+      await _updateConnectionStatus([ConnectivityResult.none]);
     }
   }
 
-  void _updateConnectionStatus(List<ConnectivityResult> results) {
+  Future<void> _updateConnectionStatus(List<ConnectivityResult> results) async {
     final wasConnected = _isConnected;
 
-    // Consider connected if any result is not 'none'
-    _isConnected = results.any((result) => result != ConnectivityResult.none);
+    // First check if we have network connectivity
+    bool hasNetworkConnection =
+        results.any((result) => result != ConnectivityResult.none);
+
+    // If we have network connection, verify actual internet access
+    bool hasInternetAccess = false;
+    if (hasNetworkConnection) {
+      hasInternetAccess = await _hasInternetAccess();
+    }
+
+    _isConnected = hasInternetAccess;
 
     // Only emit event if status changed
     if (wasConnected != _isConnected) {
       _connectionStatusController.add(_isConnected);
 
       if (_isConnected) {
-        // debugPrint('Network connection restored: $results');
+        // debugPrint('Internet connection verified: $results');
       } else {
-        //debugPrint('Network connection lost: $results');
+        // debugPrint('No internet access: $results');
       }
+    }
+  }
+
+  // Check actual internet connectivity by pinging reliable servers
+  Future<bool> _hasInternetAccess() async {
+    try {
+      // Try multiple reliable endpoints
+      final List<String> testUrls = [
+        'google.com',
+        'cloudflare.com',
+        '8.8.8.8', // Google DNS
+        '1.1.1.1', // Cloudflare DNS
+      ];
+
+      for (String url in testUrls) {
+        try {
+          final result = await InternetAddress.lookup(url)
+              .timeout(const Duration(seconds: 5));
+          if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+            return true;
+          }
+        } catch (e) {
+          // Try next URL
+          continue;
+        }
+      }
+      return false;
+    } catch (e) {
+      return false;
     }
   }
 
   // Helper method to check if there's network connectivity
   Future<bool> checkNetwork() async {
     final connectivityResults = await _connectivity.checkConnectivity();
-    return connectivityResults
-        .any((result) => result != ConnectivityResult.none);
+    bool hasNetworkConnection =
+        connectivityResults.any((result) => result != ConnectivityResult.none);
+
+    if (hasNetworkConnection) {
+      return await _hasInternetAccess();
+    }
+    return false;
   }
 
   void dispose() {

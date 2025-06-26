@@ -304,7 +304,6 @@ class AuthCubit extends Cubit<AuthState> {
         },
       );
 
-
       if (response.statusCode == 200) {
         try {
           if (response.data != null &&

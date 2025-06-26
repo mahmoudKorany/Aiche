@@ -5,14 +5,20 @@ import 'package:aiche/core/shared/constants/constants.dart';
 import 'package:aiche/main/home/home_screen/home_layout_screen.dart';
 import 'package:aiche/welcome_screens/onboarding_screen/onboarding.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'core/services/dio/dio.dart';
 import 'core/utils/cache-helper/cache-helper.dart';
+import 'firebase_options.dart';
 import 'my_app.dart';
+
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  // Firebase is already initialized in main, so we don't need to initialize it again
+  // await Firebase.initializeApp(); // Remove this line
+
   if (kDebugMode) {
     print('Handling a background message ${message.messageId}');
   }
@@ -25,9 +31,31 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
     ),
   );
 }
+
 Widget? startScreen;
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Firebase first - with duplicate check
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    // If Firebase is already initialized, this will catch the duplicate app error
+    if (e.toString().contains('duplicate-app')) {
+      if (kDebugMode) {
+        print('Firebase already initialized, continuing...');
+      }
+    } else {
+      // Re-throw if it's a different error
+      if (kDebugMode) {
+        print('Firebase initialization error: $e');
+      }
+      rethrow;
+    }
+  }
+
   await CacheHelper.init();
   await DioHelper.init();
 
@@ -36,25 +64,35 @@ void main() async {
     await FirebaseMessagingService.instance.init();
   } catch (e) {
     if (kDebugMode) {
-      // print('Firebase Messaging initialization error: $e');
+      print('Firebase Messaging initialization error: $e');
     }
   }
   int? noOfRequest = await CacheHelper.getData(key: 'noOfRequest');
-  if(noOfRequest == null)
-  {
-    await CacheHelper.saveData(key: 'noOfRequest' ,value: 0);
+  if (noOfRequest == null) {
+    await CacheHelper.saveData(key: 'noOfRequest', value: 0);
     noOfRequest = 0;
   }
 
-  if(noOfRequest == 0 || noOfRequest > 10){
+  if (noOfRequest == 0 || noOfRequest > 10) {
     AwesomeNotifications().requestPermissionToSendNotifications();
   }
   noOfRequest = noOfRequest + 1;
 
-  await CacheHelper.saveData(key: 'noOfRequest' ,value: noOfRequest);
+  await CacheHelper.saveData(key: 'noOfRequest', value: noOfRequest);
 
-  try
-  {
+  String? fcmToken;
+  try {
+    fcmToken = await FirebaseMessaging.instance.getToken();
+    if (kDebugMode) {
+      print("FCM Token: $fcmToken");
+    }
+  } catch (e) {
+    if (kDebugMode) {
+      print("Could not get FCM token: $e");
+    }
+    // Continue with login even if we can't get FCM token
+  }
+  try {
     await AwesomeNotifications().initialize(
       null,
       [
@@ -76,7 +114,7 @@ void main() async {
       print('AwesomeNotifications Error: $e');
     }
   }
-  if(Platform.isAndroid) {
+  if (Platform.isAndroid) {
     FirebaseMessaging.onMessage.listen((message) async {
       if (kDebugMode) {
         print('Handling a background message ${message.messageId}');

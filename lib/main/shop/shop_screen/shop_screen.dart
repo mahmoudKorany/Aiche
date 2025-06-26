@@ -650,7 +650,7 @@ class _ShopScreenState extends State<ShopScreen> {
   Widget _buildProductsGrid(
       List<ProductModel> products, int crossAxisCount, double screenWidth) {
     // Calculate aspect ratio based on screen width
-    final childAspectRatio = screenWidth < 600 ? 0.7 : 0.8;
+    final childAspectRatio = screenWidth < 600 ? 0.65 : 0.8;
 
     return GridView.builder(
       shrinkWrap: true,

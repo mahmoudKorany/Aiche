@@ -4,7 +4,6 @@ import 'package:aiche/core/services/network_connectivity_service.dart';
 import 'package:aiche/core/utils/firebase_error_handler.dart';
 import 'package:aiche/core/utils/notification_utils.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -107,7 +106,7 @@ class FirebaseMessagingService {
 
       _isInitialized = true;
       _cancelRetryTimer();
-    //  debugPrint('Firebase Messaging service initialized successfully');
+      //  debugPrint('Firebase Messaging service initialized successfully');
     } catch (e) {
       // If the error was already handled by FirebaseErrorHandler, we don't need to do anything else
       // debugPrint(
@@ -117,7 +116,7 @@ class FirebaseMessagingService {
 
   Future<void> _getFCMToken() async {
     if (!await _connectivityService.checkNetwork()) {
-     // debugPrint('Network not available. Cannot get FCM token.');
+      // debugPrint('Network not available. Cannot get FCM token.');
       return;
     }
 
@@ -142,15 +141,15 @@ class FirebaseMessagingService {
 
       _retryTimer = Timer(_retryInterval, () async {
         if (await _connectivityService.checkNetwork()) {
-         // debugPrint('Retrying Firebase Messaging initialization');
+          // debugPrint('Retrying Firebase Messaging initialization');
           _initializeFirebaseMessaging();
         } else {
-         // debugPrint('Network still not available, rescheduling retry');
+          // debugPrint('Network still not available, rescheduling retry');
           _scheduleRetry();
         }
       });
     } else {
-     // debugPrint('Maximum retry attempts reached. User action required.');
+      // debugPrint('Maximum retry attempts reached. User action required.');
       // Here you might want to show a UI notification to the user
     }
   }
@@ -281,7 +280,7 @@ class FirebaseMessagingService {
   // Attempt to re-fetch the FCM token - can be called when the user requests a refresh
   Future<String?> refreshToken() async {
     if (!await _connectivityService.checkNetwork()) {
-     // debugPrint('Network not available. Cannot refresh FCM token.');
+      // debugPrint('Network not available. Cannot refresh FCM token.');
       return null;
     }
 
@@ -289,7 +288,7 @@ class FirebaseMessagingService {
       return await FirebaseErrorHandler.executeWithErrorHandling(
         () async {
           final token = await _firebaseMessaging.getToken();
-         // debugPrint('FCM Token refreshed: $token');
+          // debugPrint('FCM Token refreshed: $token');
           return token;
         },
         retryCallback: refreshToken,
@@ -301,7 +300,7 @@ class FirebaseMessagingService {
 
   Future<void> subscribeToTopic(String topic) async {
     if (!await _connectivityService.checkNetwork()) {
-     // debugPrint('Network not available. Cannot subscribe to topic: $topic');
+      // debugPrint('Network not available. Cannot subscribe to topic: $topic');
       return;
     }
 
@@ -333,9 +332,8 @@ class FirebaseMessagingService {
 // This needs to be a top-level function
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // If you're going to use other Firebase services in the background, such as Firestore,
-  // make sure you call `initializeApp` before using other Firebase services.
-  await Firebase.initializeApp();
+  // Firebase is already initialized in main, so we don't need to initialize it again
+  // The Firebase.initializeApp() call is not needed here since Firebase is already initialized
 
- // debugPrint("Handling a background message: ${message.messageId}");
+  // debugPrint("Handling a background message: ${message.messageId}");
 }
