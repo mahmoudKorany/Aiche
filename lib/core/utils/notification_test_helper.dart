@@ -46,7 +46,11 @@ class NotificationTestHelper {
             color: Colors.orange,
           ),
         ],
-        schedule: NotificationCalendar.fromDate(date: testTime),
+        schedule: NotificationCalendar.fromDate(
+          date: testTime,
+          preciseAlarm: true,
+          allowWhileIdle: true,
+        ),
       );
 
       if (kDebugMode) {
@@ -117,9 +121,90 @@ class NotificationTestHelper {
               'Permission request result: ${permissionGranted ? "GRANTED" : "DENIED"}');
         }
       }
+
+      // Check if exact alarms are allowed (Android 12+)
+      if (kDebugMode) {
+        try {
+          // Check if we can schedule exact alarms by trying to access alarm permission
+          final bool canScheduleExactAlarms = await AwesomeNotifications().isNotificationAllowed();
+          print('Can schedule notifications: $canScheduleExactAlarms');
+        } catch (e) {
+          print('Could not check exact alarm permission: $e');
+        }
+      }
     } catch (e) {
       if (kDebugMode) {
         print('Error checking notification status: $e');
+      }
+    }
+  }
+
+  /// Request all necessary permissions for background alarms
+  static Future<bool> requestAllPermissions() async {
+    try {
+      // Request basic notification permission
+      final bool notificationPermission =
+          await AwesomeNotifications().requestPermissionToSendNotifications();
+
+      if (kDebugMode) {
+        print('Notification permission: $notificationPermission');
+      }
+
+      // Request exact alarm permission for Android 12+
+      try {
+        await AwesomeNotifications().showAlarmPage();
+        if (kDebugMode) {
+          print('Exact alarm permission page shown');
+        }
+      } catch (e) {
+        if (kDebugMode) {
+          print('Could not show exact alarm permission page: $e');
+        }
+      }
+
+      return notificationPermission;
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error requesting permissions: $e');
+      }
+      return false;
+    }
+  }
+
+  /// Clear all scheduled notifications (for testing)
+  static Future<void> clearAllScheduledNotifications() async {
+    try {
+      await AwesomeNotifications().cancelAllSchedules();
+      if (kDebugMode) {
+        print('All scheduled notifications cleared');
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error clearing scheduled notifications: $e');
+      }
+    }
+  }
+
+  /// List all active scheduled notifications
+  static Future<void> listScheduledNotifications() async {
+    try {
+      final List<NotificationModel> scheduledNotifications =
+          await AwesomeNotifications().listScheduledNotifications();
+
+      if (kDebugMode) {
+        print(
+            'Found ${scheduledNotifications.length} scheduled notifications:');
+        for (final notification in scheduledNotifications) {
+          print(
+              'ID: ${notification.content?.id}, Title: ${notification.content?.title}');
+          if (notification.schedule != null) {
+            print('Scheduled for: ${notification.schedule.toString()}');
+          }
+        }
+      }
+    } catch (e) {
+      if (kDebugMode) {
+        print('Error listing scheduled notifications: $e');
       }
     }
   }

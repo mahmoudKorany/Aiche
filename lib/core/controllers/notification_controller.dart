@@ -3,6 +3,15 @@ import 'package:flutter/foundation.dart';
 
 class NotificationController {
   static bool _listenersInitialized = false;
+  static dynamic _tasksCubit; // Store reference to TasksCubit
+
+  /// Set the TasksCubit instance for handling notification actions
+  static void setTasksCubit(dynamic tasksCubit) {
+    _tasksCubit = tasksCubit;
+    if (kDebugMode) {
+      print('TasksCubit instance set in NotificationController');
+    }
+  }
 
   /// Initialize notification listeners only once
   static Future<void> initializeListeners() async {
@@ -36,6 +45,8 @@ class NotificationController {
     if (kDebugMode) {
       print('Notification action received: ${receivedAction.actionType}');
       print('Action key: ${receivedAction.buttonKeyPressed}');
+      print('Channel key: ${receivedAction.channelKey}');
+      print('Notification ID: ${receivedAction.id}');
     }
 
     // Handle task notification actions
@@ -43,22 +54,27 @@ class NotificationController {
       final String? actionKey = receivedAction.buttonKeyPressed;
       final int notificationId = receivedAction.id!;
 
-      if (actionKey != null) {
-        // TODO: Implement task action handling
-        // This would need to communicate with your TasksCubit
-        // For now, we'll just log the actions
-        switch (actionKey) {
-          case 'MARK_DONE':
-            if (kDebugMode) {
-              print(
-                  'Mark task complete requested for notification: $notificationId');
-            }
-            break;
-          case 'SNOOZE':
-            if (kDebugMode) {
-              print('Snooze task requested for notification: $notificationId');
-            }
-            break;
+      if (actionKey != null && _tasksCubit != null) {
+        try {
+          if (kDebugMode) {
+            print(
+                'Attempting to handle task notification action: $actionKey for notification: $notificationId');
+          }
+
+          // Handle actions through TasksCubit
+          await _tasksCubit.handleNotificationAction(actionKey, notificationId);
+
+          if (kDebugMode) {
+            print('Successfully handled notification action: $actionKey');
+          }
+        } catch (e) {
+          if (kDebugMode) {
+            print('Error handling notification action: $e');
+          }
+        }
+      } else if (_tasksCubit == null) {
+        if (kDebugMode) {
+          print('TasksCubit not available for handling notification action');
         }
       }
     }
@@ -69,6 +85,8 @@ class NotificationController {
       ReceivedNotification receivedNotification) async {
     if (kDebugMode) {
       print('Notification created: ${receivedNotification.channelKey}');
+      print('Notification ID: ${receivedNotification.id}');
+      print('Title: ${receivedNotification.title}');
     }
   }
 
@@ -77,6 +95,8 @@ class NotificationController {
       ReceivedNotification receivedNotification) async {
     if (kDebugMode) {
       print('Notification displayed: ${receivedNotification.channelKey}');
+      print('Notification ID: ${receivedNotification.id}');
+      print('Title: ${receivedNotification.title}');
     }
   }
 
@@ -85,6 +105,7 @@ class NotificationController {
       ReceivedAction receivedAction) async {
     if (kDebugMode) {
       print('Notification dismissed: ${receivedAction.channelKey}');
+      print('Notification ID: ${receivedAction.id}');
     }
   }
 }

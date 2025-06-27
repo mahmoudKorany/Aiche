@@ -5,6 +5,7 @@ import 'package:aiche/main/tasks/models/committee_task_model.dart';
 import 'package:aiche/main/tasks/models/task.dart';
 import 'package:aiche/main/tasks/tasks_cubit/tasks_state.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:flutter/foundation.dart'; // Add this import for kDebugMode
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sqflite/sqflite.dart';
@@ -141,6 +142,8 @@ class TasksCubit extends Cubit<TasksState> {
     double? progress,
     bool? isCompleted,
     bool? shouldNotify,
+    int?
+        notificationId, // Add this parameter to allow direct setting of notification ID
   }) async {
     try {
       // Find the task in the list
@@ -154,27 +157,27 @@ class TasksCubit extends Cubit<TasksState> {
       Task existingTask = _tasks[index];
 
       // Handle notification if needed
-      int? notificationId = existingTask.notificationId;
+      int? finalNotificationId = notificationId ?? existingTask.notificationId;
 
-      // Cancel existing notification if there is one
-      if (notificationId != null) {
-        await _cancelNotification(notificationId);
+      // Cancel existing notification if there is one (unless we're setting a new one directly)
+      if (existingTask.notificationId != null && notificationId == null) {
+        await _cancelNotification(existingTask.notificationId!);
       }
 
       // Schedule new notification if requested
-      if (shouldNotify == true) {
-        notificationId =
+      if (shouldNotify == true && notificationId == null) {
+        finalNotificationId =
             DateTime.now().millisecondsSinceEpoch.remainder(100000);
         await _scheduleNotification(
-          notificationId,
+          finalNotificationId,
           title ?? existingTask.title,
           description ?? existingTask.description,
           dueDate ?? existingTask.dueDate,
         );
-        emit(NotificationScheduled(notificationId));
+        emit(NotificationScheduled(finalNotificationId));
       } else if (shouldNotify == false) {
         // If explicitly set to false, set to null
-        notificationId = null;
+        finalNotificationId = null;
       }
 
       // Create updated task
@@ -184,7 +187,7 @@ class TasksCubit extends Cubit<TasksState> {
         dueDate: dueDate,
         progress: progress,
         isCompleted: isCompleted,
-        notificationId: notificationId,
+        notificationId: finalNotificationId,
       );
 
       // Update in database
@@ -294,8 +297,13 @@ class TasksCubit extends Cubit<TasksState> {
     DateTime dueDate,
   ) async {
     try {
+      // Check if the scheduled time is in the future
+      if (dueDate.isBefore(DateTime.now()) && kDebugMode) {
+        print('Cannot schedule notification for past date: $dueDate');
+        return;
+      }
+
       // Use a microtask to help ensure we're not blocking the main thread
-      // while still handling the notification operation properly
       await Future.microtask(() async {
         return await AwesomeNotifications().createNotification(
           content: NotificationContent(
@@ -308,22 +316,22 @@ class TasksCubit extends Cubit<TasksState> {
             wakeUpScreen: true,
             fullScreenIntent: true,
             criticalAlert: true,
-            // Auto-cancel after being dismissed
             autoDismissible: false,
-            // Add action buttons
             actionType: ActionType.Default,
-            // Sound and vibration settings for alarm behavior
             customSound: null, // Use default alarm sound
             backgroundColor: const Color(0xFF111347),
             largeIcon: 'resource://drawable/app_icon',
-            // Ensure notification persists and is loud
             locked: false,
             hideLargeIconOnExpand: false,
-            // Make it behave like an alarm
             displayOnForeground: true,
             displayOnBackground: true,
-            // Ticker for accessibility
             ticker: 'Task due: $title',
+            showWhen: true,
+            payload: {
+              'taskId': notificationId.toString(),
+              'taskTitle': title,
+              'taskDescription': description,
+            },
           ),
           actionButtons: [
             NotificationActionButton(
@@ -341,9 +349,22 @@ class TasksCubit extends Cubit<TasksState> {
               color: Colors.orange,
             ),
           ],
-          schedule: NotificationCalendar.fromDate(date: dueDate),
+          schedule: NotificationCalendar.fromDate(
+            date: dueDate,
+            preciseAlarm: true, // Enable precise alarm for exact timing
+            allowWhileIdle:
+                true, // Allow notification while device is idle/dozing
+          ),
         );
       });
+
+      if (kDebugMode) {
+        print('Scheduled task alarm for: $dueDate');
+        print('Notification ID: $notificationId');
+        print('Task: $title');
+        print('Current time: ${DateTime.now()}');
+        print('Time until alarm: ${dueDate.difference(DateTime.now())}');
+      }
     } catch (e) {
       print('Failed to schedule notification: $e');
       // We don't emit error here as task creation should continue
@@ -373,7 +394,37 @@ class TasksCubit extends Cubit<TasksState> {
             orElse: () => null,
           );
 
-      if (task == null) return;
+      if (task == null) {
+        // If task not found in memory, reload from database to ensure we have latest data
+        await getTasks();
+        // Try to find the task again after reloading
+        final Task? reloadedTask = _tasks.cast<Task?>().firstWhere(
+              (task) => task?.notificationId == notificationId,
+              orElse: () => null,
+            );
+        if (reloadedTask == null) return;
+
+        // Use the reloaded task for further processing
+        switch (actionKey) {
+          case 'MARK_DONE':
+            // Mark task as complete
+            await updateTask(
+              id: reloadedTask.id,
+              isCompleted: true,
+              progress: 1.0,
+            );
+            // Cancel the notification since task is completed
+            await _cancelNotification(notificationId);
+            // Force a UI update by emitting a fresh state
+            await getTasks();
+            break;
+          case 'SNOOZE':
+            // Snooze for 5 minutes
+            await _snoozeTask(reloadedTask, const Duration(minutes: 5));
+            break;
+        }
+        return;
+      }
 
       switch (actionKey) {
         case 'MARK_DONE':
@@ -383,6 +434,10 @@ class TasksCubit extends Cubit<TasksState> {
             isCompleted: true,
             progress: 1.0,
           );
+          // Cancel the notification since task is completed
+          await _cancelNotification(notificationId);
+          // Force a UI update by emitting a fresh state
+          await getTasks();
           break;
         case 'SNOOZE':
           // Snooze for 5 minutes
@@ -391,6 +446,8 @@ class TasksCubit extends Cubit<TasksState> {
       }
     } catch (e) {
       print('Failed to handle notification action: $e');
+      // In case of error, reload tasks to ensure UI is in sync
+      await getTasks();
     }
   }
 
@@ -407,25 +464,25 @@ class TasksCubit extends Cubit<TasksState> {
       final int newNotificationId =
           DateTime.now().millisecondsSinceEpoch.remainder(100000);
 
+      // Create the snooze notification with enhanced alarm properties
       await _scheduleNotification(
         newNotificationId,
-        task.title,
-        task.description.isEmpty ? 'Snoozed reminder' : task.description,
+        '⏰ Snoozed: ${task.title}',
+        task.description.isEmpty
+            ? 'Snoozed reminder - task is due!'
+            : task.description,
         snoozeTime,
       );
 
-      // Update task with new notification ID
+      // Update task with new notification ID in database
       await updateTask(
         id: task.id,
+        notificationId: newNotificationId,
         shouldNotify: true,
       );
 
-      // Update the task's notification ID in memory
-      final int index = _tasks.indexWhere((t) => t.id == task.id);
-      if (index != -1) {
-        _tasks[index] = task.copyWith(notificationId: newNotificationId);
-        emit(TasksLoaded(_tasks));
-      }
+      print(
+          'Task "${task.title}" snoozed for ${snoozeDuration.inMinutes} minutes. New alarm at: $snoozeTime');
     } catch (e) {
       print('Failed to snooze task: $e');
     }

@@ -16,6 +16,7 @@ import '../../home/home_component/drawer_icon.dart';
 import '../models/committee_task_model.dart';
 import 'add_task_dialog.dart';
 import 'edit_task_screen.dart';
+import '../../../core/controllers/notification_controller.dart';
 
 class TasksScreen extends StatefulWidget {
   const TasksScreen({super.key});
@@ -25,7 +26,7 @@ class TasksScreen extends StatefulWidget {
 }
 
 class _TasksScreenState extends State<TasksScreen>
-    with SingleTickerProviderStateMixin {
+    with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   late TabController _tabController;
   int _selectedFilterIndex = 0;
   final List<String> _filterLabels = [
@@ -38,6 +39,9 @@ class _TasksScreenState extends State<TasksScreen>
   @override
   void initState() {
     super.initState();
+    // Add this widget as an observer to detect app lifecycle changes
+    WidgetsBinding.instance.addObserver(this);
+
     _tabController = TabController(length: _filterLabels.length, vsync: this);
     _tabController.addListener(() {
       setState(() {
@@ -47,14 +51,30 @@ class _TasksScreenState extends State<TasksScreen>
 
     // Load tasks when screen initializes
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<TasksCubit>().getTasks();
+      final tasksCubit = context.read<TasksCubit>();
+      tasksCubit.getTasks();
+
+      // Set the TasksCubit instance in NotificationController for handling notification actions
+      NotificationController.setTasksCubit(tasksCubit);
     });
   }
 
   @override
   void dispose() {
+    // Remove this widget as an observer
+    WidgetsBinding.instance.removeObserver(this);
     _tabController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // Refresh tasks when app comes back to foreground
+    // This ensures any tasks completed via notifications are properly reflected
+    if (state == AppLifecycleState.resumed) {
+      context.read<TasksCubit>().getTasks();
+    }
   }
 
   @override

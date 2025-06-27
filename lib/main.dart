@@ -16,9 +16,6 @@ import 'firebase_options.dart';
 import 'my_app.dart';
 
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // Firebase is already initialized in main, so we don't need to initialize it again
-  // await Firebase.initializeApp(); // Remove this line
-
   if (kDebugMode) {
     print('Handling a background message ${message.messageId}');
   }
@@ -84,6 +81,10 @@ void main() async {
           channelShowBadge: true,
           onlyAlertOnce: false,
           defaultRingtoneType: DefaultRingtoneType.Alarm,
+          // Enhanced settings for background notifications
+          playSound: true,
+          soundSource: null, // Use system default alarm sound
+          locked: false,
         )
       ],
       channelGroups: [
@@ -94,6 +95,7 @@ void main() async {
             channelGroupKey: 'task_channel_group',
             channelGroupName: 'Task Reminders'),
       ],
+      debug: kDebugMode,
     );
 
     // Initialize notification listeners using our controller to prevent redefinition
