@@ -20,6 +20,7 @@ import 'package:aiche/main/tasks/tasks_cubit/tasks_cubit.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -31,14 +32,20 @@ class AuthCubit extends Cubit<AuthState> {
 
   // login
   Future<void> login(
-      String email, String password, BuildContext context) async
-  {
+      String email, String password, BuildContext context) async {
     emit(AuthLoading());
     String? fcmToken;
     try {
-      fcmToken = await FirebaseMessaging.instance.getToken();
+      fcmToken = await FirebaseMessaging.instance
+          .getToken()
+          .timeout(const Duration(seconds: 5));
     } catch (e) {
-      //debugPrint("Could not get FCM token: $e");
+      if (kDebugMode) {
+        print("Warning: Could not get FCM token during login: $e");
+        if (e.toString().contains('SERVICE_NOT_AVAILABLE')) {
+          print("FCM service not available - this is normal in debug mode");
+        }
+      }
       // Continue with login even if we can't get FCM token
     }
     try {
@@ -47,7 +54,8 @@ class AuthCubit extends Cubit<AuthState> {
         data: {
           'email': email,
           'password': password,
-          "fcm_token": fcmToken ?? 'no token'
+          "fcm_token":
+              fcmToken ?? 'debug_mode_${DateTime.now().millisecondsSinceEpoch}'
         },
       );
 
@@ -59,7 +67,7 @@ class AuthCubit extends Cubit<AuthState> {
             final tokenValue = response.data['token']?.toString();
             await CacheHelper.saveData(key: 'token', value: tokenValue);
           }
-          await  getUserData();
+          await getUserData();
           await Future.wait([
             TasksCubit.get(context).getTasksFromApi(),
             BlogsCubit.get(context).getBlogs(),
@@ -90,8 +98,7 @@ class AuthCubit extends Cubit<AuthState> {
 
   // register
   Future<void> register(
-      String name, String email, String password, context) async
-  {
+      String name, String email, String password, context) async {
     emit(RegisterLoading());
     String? fcmToken;
     try {
@@ -111,7 +118,7 @@ class AuthCubit extends Cubit<AuthState> {
       });
       await CacheHelper.saveData(key: 'token', value: response.data['token']);
 
-      await  getUserData();
+      await getUserData();
       await Future.wait([
         BlogsCubit.get(context).getBlogs(),
         TasksCubit.get(context).getTasksFromApi(),
@@ -194,8 +201,7 @@ class AuthCubit extends Cubit<AuthState> {
   Future<void> updateProfileImage({
     required BuildContext context,
     required File imageFile,
-  }) async
-  {
+  }) async {
     emit(UpdateProfileImageLoading());
     token = await CacheHelper.getData(key: 'token');
     try {
@@ -239,8 +245,7 @@ class AuthCubit extends Cubit<AuthState> {
     required String? bio,
     required String? phone,
     required String? linkedInLink,
-  }) async
-  {
+  }) async {
     emit(UpdateUserDataLoading());
 
     try {
@@ -348,7 +353,7 @@ class AuthCubit extends Cubit<AuthState> {
             emit(AuthGoogleError("Invalid response from server"));
             return;
           }
-          await  getUserData();
+          await getUserData();
           await Future.wait([
             BlogsCubit.get(context).getBlogs(),
             LayoutCubit.get(context).getHomeBanner(),
@@ -359,7 +364,6 @@ class AuthCubit extends Cubit<AuthState> {
             ShopCubit.get(context).getAllProducts(),
             CommitteeCubit.get(context).getCommitteeData(),
             TasksCubit.get(context).getTasksFromApi(),
-
           ]).timeout(const Duration(seconds: 30));
 
           emit(AuthGoogleSuccess());

@@ -136,13 +136,18 @@ class _TasksScreenState extends State<TasksScreen>
 
                   // Tasks List
                   Expanded(
-                    child: state is TasksLoading || state is GetAllTasksFromApiLoading
+                    child: state is TasksLoading ||
+                            state is GetAllTasksFromApiLoading
                         ? _buildLoadingIndicator()
-                        : TasksCubit.get(context).tasks.isEmpty
-                            ? _buildEmptyState()
-                            : _selectedFilterIndex == 0
-                                ? _buildCommitteeTabContent(context)
-                                : _buildTasksList(context, tasks),
+                        : _selectedFilterIndex == 0
+                            ? (TasksCubit.get(context).tasks.isEmpty
+                                ? _buildEmptyState()
+                                : _buildCommitteeTabContent(context))
+                            : (state is TasksLoaded && state.tasks.isEmpty)
+                                ? _buildEmptyState()
+                                : state is TasksLoaded
+                                    ? _buildTasksList(context, tasks)
+                                    : _buildEmptyState(),
                   ),
                 ],
               ),
@@ -170,7 +175,9 @@ class _TasksScreenState extends State<TasksScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const DrawerIcon(),
-          const Gap10(isHorizontal: true,),
+          const Gap10(
+            isHorizontal: true,
+          ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -409,8 +416,13 @@ class _TasksScreenState extends State<TasksScreen>
       child: ListView.builder(
         padding: EdgeInsets.symmetric(horizontal: 16.w),
         physics: const BouncingScrollPhysics(),
-        itemCount: tasks.length,
+        itemCount: tasks.length + 1, // Add 1 for the bottom spacing
         itemBuilder: (context, index) {
+          // Add bottom spacing as the last item
+          if (index == tasks.length) {
+            return SizedBox(height: Platform.isIOS ? 100.h : 120.h);
+          }
+
           final task = tasks[index];
           return AnimationConfiguration.staggeredList(
             position: index,
@@ -564,8 +576,9 @@ class _TasksScreenState extends State<TasksScreen>
                             ? TextDecoration.lineThrough
                             : TextDecoration.none,
                       ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
+                      // Remove maxLines and overflow to show full text
+                      // maxLines: 2,
+                      // overflow: TextOverflow.ellipsis,
                     ),
                   ],
                   SizedBox(height: 8.h),
@@ -849,17 +862,22 @@ class _TasksScreenState extends State<TasksScreen>
 
         return AnimationLimiter(
           child: RefreshIndicator(
-            onRefresh: ()async{
+            onRefresh: () async {
               await TasksCubit.get(context).getTasksFromApi();
             },
             child: ListView.builder(
               padding: EdgeInsets.symmetric(horizontal: 16.w),
-              physics:
-              const AlwaysScrollableScrollPhysics(
+              physics: const AlwaysScrollableScrollPhysics(
                 parent: BouncingScrollPhysics(),
               ),
-              itemCount: tasksCubit.tasks.length,
+              itemCount:
+                  tasksCubit.tasks.length + 1, // Add 1 for the bottom spacing
               itemBuilder: (context, index) {
+                // Add bottom spacing as the last item
+                if (index == tasksCubit.tasks.length) {
+                  return SizedBox(height: Platform.isIOS ? 100.h : 120.h);
+                }
+
                 final task = tasksCubit.tasks[index];
                 return AnimationConfiguration.staggeredList(
                   position: index,
@@ -945,7 +963,8 @@ class _TasksScreenState extends State<TasksScreen>
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (task.description != null && task.description!.isNotEmpty) ...[
+                if (task.description != null &&
+                    task.description!.isNotEmpty) ...[
                   SizedBox(height: 6.h),
                   Text(
                     task.description!,
@@ -953,8 +972,9 @@ class _TasksScreenState extends State<TasksScreen>
                       fontSize: 14.sp,
                       color: Colors.white70,
                     ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                    // Remove maxLines and overflow to show full text
+                    // maxLines: 2,
+                    // overflow: TextOverflow.ellipsis,
                   ),
                 ],
                 SizedBox(height: 8.h),
@@ -967,7 +987,9 @@ class _TasksScreenState extends State<TasksScreen>
                     ),
                     SizedBox(width: 4.w),
                     Text(
-                      formattedDate.isNotEmpty ? formattedDate : 'No date specified',
+                      formattedDate.isNotEmpty
+                          ? formattedDate
+                          : 'No date specified',
                       style: TextStyle(
                         fontSize: 13.sp,
                         color: Colors.white70,

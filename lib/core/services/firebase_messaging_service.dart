@@ -6,7 +6,6 @@ import 'package:aiche/core/utils/notification_utils.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 
 class FirebaseMessagingService {
   static FirebaseMessagingService? _instance;
@@ -16,12 +15,14 @@ class FirebaseMessagingService {
 
   // Flag to track if initialization has been completed
   bool _isInitialized = false;
+  bool _isInitializing = false;
 
   // Auto-retry mechanism
   Timer? _retryTimer;
   int _retryAttempts = 0;
-  static const int _maxRetryAttempts = 5;
-  static const Duration _retryInterval = Duration(seconds: 30);
+  static const int _maxRetryAttempts = 3; // Reduced retry attempts
+  static const Duration _retryInterval =
+      Duration(seconds: 10); // Reduced interval
 
   // Stream controller for handling notification clicks
   final StreamController<RemoteMessage> _onMessageOpenedAppController =
@@ -35,15 +36,15 @@ class FirebaseMessagingService {
     return _instance!;
   }
 
-  FirebaseMessagingService._();
+  FirebaseMessagingService._() {
+    // Set up listeners in constructor to avoid duplicate listeners
+    _setupConnectionListeners();
+  }
 
-  Future<void> init() async {
-    // Initialize network connectivity service first
-    await _connectivityService.init();
-
+  void _setupConnectionListeners() {
     // Subscribe to network status changes to retry initialization when network is restored
     _connectivityService.connectionStatus.listen((isConnected) {
-      if (isConnected && !_isInitialized) {
+      if (isConnected && !_isInitialized && !_isInitializing) {
         _retryAttempts = 0; // Reset retry attempts
         _initializeFirebaseMessaging();
       }
@@ -51,26 +52,83 @@ class FirebaseMessagingService {
 
     // Also listen to Firebase-specific network issues
     FirebaseErrorHandler.firebaseNetworkStream.listen((isConnected) {
-      if (isConnected && !_isInitialized) {
+      if (isConnected && !_isInitialized && !_isInitializing) {
         _initializeFirebaseMessaging();
       }
     });
+  }
 
-    // Initial attempt to initialize
-    if (await _connectivityService.checkNetwork()) {
-      await _initializeFirebaseMessaging();
-    } else {
-      // debugPrint(
-      //     'Network not available. Firebase Messaging initialization deferred.');
-      _scheduleRetry();
+  Future<void> init() async {
+    // Prevent multiple initialization attempts
+    if (_isInitialized || _isInitializing) {
+      if (kDebugMode) {
+        print(
+            'Firebase Messaging Service already initialized or initializing...');
+      }
+      return;
+    }
+
+    _isInitializing = true;
+
+    try {
+      // Initialize network connectivity service first
+      await _connectivityService.init();
+
+      // Check if we already have network connectivity
+      if (await _connectivityService.checkNetwork()) {
+        await _initializeFirebaseMessaging();
+      } else {
+        if (kDebugMode) {
+          print(
+              'Network not available. Firebase Messaging initialization deferred.');
+        }
+      }
+    } catch (e) {
+      // Check if this is a SERVICE_NOT_AVAILABLE error (common in debug mode)
+      if (e.toString().contains('SERVICE_NOT_AVAILABLE') ||
+          e.toString().contains('java.io.IOException')) {
+        if (kDebugMode) {
+          print(
+              'FCM service not available - continuing without cloud messaging');
+          print('This is normal in debug mode or on emulators');
+        }
+        // Mark as initialized to prevent further retry attempts
+        _isInitialized = true;
+      } else {
+        if (kDebugMode) {
+          print('Firebase Messaging Service init error (non-critical): $e');
+        }
+      }
+      // Don't throw the error - allow app to continue without FCM
+    } finally {
+      _isInitializing = false;
     }
   }
 
   Future<void> _initializeFirebaseMessaging() async {
-    if (_isInitialized) return;
+    if (_isInitialized || _isInitializing) return;
+
+    _isInitializing = true;
 
     try {
-      // Use our new error handler for the initialization process
+      // Check for FCM service availability first (common issue in debug mode)
+      try {
+        await _firebaseMessaging.getToken().timeout(const Duration(seconds: 3));
+      } catch (e) {
+        if (e.toString().contains('SERVICE_NOT_AVAILABLE') ||
+            e.toString().contains('java.io.IOException')) {
+          if (kDebugMode) {
+            print(
+                'FCM service not available - continuing without cloud messaging');
+          }
+          _isInitialized = true; // Mark as initialized to prevent retries
+          return;
+        }
+        // For other errors, continue with normal error handling
+        rethrow;
+      }
+
+      // Use our error handler for the initialization process
       await FirebaseErrorHandler.executeWithErrorHandling(
         () async {
           // Request permission for iOS
@@ -101,16 +159,29 @@ class FirebaseMessagingService {
             _handleMessageOpenedApp(initialMessage);
           }
         },
-        retryCallback: _initializeFirebaseMessaging,
+        retryCallback: null, // Disable retries for initialization
       );
 
       _isInitialized = true;
       _cancelRetryTimer();
-      //  debugPrint('Firebase Messaging service initialized successfully');
+      if (kDebugMode) {
+        print('Firebase Messaging service initialized successfully');
+      }
     } catch (e) {
-      // If the error was already handled by FirebaseErrorHandler, we don't need to do anything else
-      // debugPrint(
-      //     'Error during Firebase Messaging initialization (handled by FirebaseErrorHandler)');
+      // Check if this is a service unavailable error
+      if (FirebaseErrorHandler.isRecoverableError(e)) {
+        // Only schedule retry for recoverable errors
+        _scheduleRetry();
+      } else {
+        // For non-recoverable errors (like SERVICE_NOT_AVAILABLE), mark as initialized
+        _isInitialized = true;
+        if (kDebugMode) {
+          print(
+              'Firebase Messaging initialization skipped due to service unavailability');
+        }
+      }
+    } finally {
+      _isInitializing = false;
     }
   }
 
@@ -160,41 +231,15 @@ class FirebaseMessagingService {
   }
 
   Future<void> _configureAwesomeNotifications() async {
-    // Initialize Awesome Notifications
-    await AwesomeNotifications().initialize(
-      // Set the icon to null to use the default app icon
-      'resource://drawable/app_icon',
-      [
-        NotificationChannel(
-          channelKey: 'high_importance_channel',
-          channelName: 'High Importance Notifications',
-          channelDescription:
-              'This channel is used for important notifications.',
-          defaultColor: const Color(0xFF9D50DD),
-          ledColor: const Color(0xFF9D50DD),
-          importance: NotificationImportance.High,
-          channelShowBadge: true,
-        )
-      ],
-    );
-
-    // Request notification permissions
+    // Don't initialize AwesomeNotifications here since it's already done in main.dart
+    // Just request permissions if needed
     await AwesomeNotifications().isNotificationAllowed().then((isAllowed) {
       if (!isAllowed) {
         AwesomeNotifications().requestPermissionToSendNotifications();
       }
     });
 
-    // Set up action event listeners
-    AwesomeNotifications().setListeners(
-      onActionReceivedMethod: FirebaseMessagingService.onActionReceivedMethod,
-      onNotificationCreatedMethod:
-          FirebaseMessagingService.onNotificationCreatedMethod,
-      onNotificationDisplayedMethod:
-          FirebaseMessagingService.onNotificationDisplayedMethod,
-      onDismissActionReceivedMethod:
-          FirebaseMessagingService.onDismissActionReceivedMethod,
-    );
+    // Note: Listeners are now set up in NotificationController to avoid conflicts
   }
 
   // Required static methods for awesome_notifications

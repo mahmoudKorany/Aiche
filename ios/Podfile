@@ -4,19 +4,12 @@ platform :ios, '14.0'
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
-# Prevent timeout issues with CDN
-install! 'cocoapods', :deterministic_uuids => false
-
-# Increase timeout settings
-ENV['COCOAPODS_TIMEOUT'] = '300'
-
 project 'Runner', {
   'Debug' => :debug,
   'Profile' => :release,
   'Release' => :release,
 }
 
-# Function to determine the Flutter root directory
 def flutter_root
   generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
   unless File.exist?(generated_xcode_build_settings_path)
@@ -30,10 +23,8 @@ def flutter_root
   raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try deleting Generated.xcconfig, then run flutter pub get"
 end
 
-# Include the Flutter podhelper for iOS setup
 require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
 
-# Flutter setup for iOS pods
 flutter_ios_podfile_setup
 
 target 'Runner' do
@@ -42,41 +33,23 @@ target 'Runner' do
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 
-  # Firebase specific fixes
-  pod 'Firebase', :modular_headers => true
-  pod 'FirebaseCore', :modular_headers => true
-  pod 'GoogleUtilities', :modular_headers => true
-  pod 'FirebaseMessaging', :modular_headers => true
-  pod 'GoogleDataTransport', :modular_headers => true
-  pod 'nanopb', :modular_headers => true
-
   target 'RunnerTests' do
     inherit! :search_paths
-    # Here you can add additional configurations for test targets
   end
 end
 
-# Post-install hook for additional iOS build settings
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
 
-    # Enable non-modular includes in framework modules for all targets
     target.build_configurations.each do |config|
-      # Allow non-modular includes for all pods
       config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
-      
-      # Add build settings to support newer iOS versions
       config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
-
-      # Ensure pods support arm64 for simulator
       config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = ''
-      
-      # Suppress warnings for all targets
       config.build_settings['GCC_WARN_INHIBIT_ALL_WARNINGS'] = 'YES'
       
-      # Fix for Firebase header import issues - apply to more targets
-      if ['firebase_messaging', 'Firebase', 'FirebaseCore', 'FirebaseMessaging'].include?(target.name)
+      # Fix for Firebase and Awesome Notifications compatibility
+      if ['firebase_auth', 'firebase_core', 'firebase_messaging', 'awesome_notifications', 'awesome_notifications_core'].include?(target.name)
         config.build_settings['OTHER_CFLAGS'] ||= ['$(inherited)']
         config.build_settings['OTHER_CFLAGS'] << '-Wno-error=non-modular-include-in-framework-module'
         config.build_settings['OTHER_SWIFT_FLAGS'] ||= ['$(inherited)']

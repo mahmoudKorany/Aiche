@@ -5,6 +5,7 @@ import 'package:aiche/main/tasks/models/committee_task_model.dart';
 import 'package:aiche/main/tasks/models/task.dart';
 import 'package:aiche/main/tasks/tasks_cubit/tasks_state.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
@@ -300,10 +301,46 @@ class TasksCubit extends Cubit<TasksState> {
           content: NotificationContent(
             id: notificationId,
             channelKey: 'task_channel',
-            title: 'Task Reminder: $title',
-            body: description,
-            notificationLayout: NotificationLayout.Default,
+            title: '⏰ Task Reminder: $title',
+            body: '📅 Due now: $description',
+            notificationLayout: NotificationLayout.BigText,
+            category: NotificationCategory.Alarm,
+            wakeUpScreen: true,
+            fullScreenIntent: true,
+            criticalAlert: true,
+            // Auto-cancel after being dismissed
+            autoDismissible: false,
+            // Add action buttons
+            actionType: ActionType.Default,
+            // Sound and vibration settings for alarm behavior
+            customSound: null, // Use default alarm sound
+            backgroundColor: const Color(0xFF111347),
+            largeIcon: 'resource://drawable/app_icon',
+            // Ensure notification persists and is loud
+            locked: false,
+            hideLargeIconOnExpand: false,
+            // Make it behave like an alarm
+            displayOnForeground: true,
+            displayOnBackground: true,
+            // Ticker for accessibility
+            ticker: 'Task due: $title',
           ),
+          actionButtons: [
+            NotificationActionButton(
+              key: 'MARK_DONE',
+              label: 'Mark Complete',
+              actionType: ActionType.SilentAction,
+              autoDismissible: true,
+              color: Colors.green,
+            ),
+            NotificationActionButton(
+              key: 'SNOOZE',
+              label: 'Snooze 5min',
+              actionType: ActionType.SilentAction,
+              autoDismissible: true,
+              color: Colors.orange,
+            ),
+          ],
           schedule: NotificationCalendar.fromDate(date: dueDate),
         );
       });
@@ -323,6 +360,74 @@ class TasksCubit extends Cubit<TasksState> {
     } catch (e) {
       print('Failed to cancel notification: $e');
       // We don't emit error here as task operations should continue
+    }
+  }
+
+  // Handle notification actions (Mark Complete, Snooze)
+  Future<void> handleNotificationAction(
+      String actionKey, int notificationId) async {
+    try {
+      // Find the task with this notification ID
+      final Task? task = _tasks.cast<Task?>().firstWhere(
+            (task) => task?.notificationId == notificationId,
+            orElse: () => null,
+          );
+
+      if (task == null) return;
+
+      switch (actionKey) {
+        case 'MARK_DONE':
+          // Mark task as complete
+          await updateTask(
+            id: task.id,
+            isCompleted: true,
+            progress: 1.0,
+          );
+          break;
+        case 'SNOOZE':
+          // Snooze for 5 minutes
+          await _snoozeTask(task, const Duration(minutes: 5));
+          break;
+      }
+    } catch (e) {
+      print('Failed to handle notification action: $e');
+    }
+  }
+
+  // Snooze a task by rescheduling its notification
+  Future<void> _snoozeTask(Task task, Duration snoozeDuration) async {
+    try {
+      // Cancel current notification
+      if (task.notificationId != null) {
+        await _cancelNotification(task.notificationId!);
+      }
+
+      // Schedule new notification for snooze time
+      final DateTime snoozeTime = DateTime.now().add(snoozeDuration);
+      final int newNotificationId =
+          DateTime.now().millisecondsSinceEpoch.remainder(100000);
+
+      await _scheduleNotification(
+        newNotificationId,
+        task.title,
+        task.description.isEmpty ? 'Snoozed reminder' : task.description,
+        snoozeTime,
+      );
+
+      // Update task with new notification ID
+      await updateTask(
+        id: task.id,
+        shouldNotify: true,
+      );
+
+      // Update the task's notification ID in memory
+      final int index = _tasks.indexWhere((t) => t.id == task.id);
+      if (index != -1) {
+        _tasks[index] = task.copyWith(notificationId: newNotificationId);
+        emit(TasksLoaded(_tasks));
+      }
+    } catch (e) {
+      print('Failed to snooze task: $e');
     }
   }
 

@@ -152,7 +152,7 @@ class _SplashScreenState extends State<SplashScreen>
                                                 child: FadeTransition(
                                                   opacity: _fadeAnimation,
                                                   child: Text(
-                                                    'Egyptian Institute of Chemical Engineers',
+                                                    'American Institute of Chemical Engineers',
                                                     style: GoogleFonts.poppins(
                                                       fontSize: 14.sp,
                                                       color: Colors.white

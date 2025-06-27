@@ -14,6 +14,13 @@
 -keep class com.google.firebase.** { *; }
 -dontwarn com.google.firebase.**
 
+# Keep Google Play Core classes to prevent R8 errors
+-keep class com.google.android.play.core.** { *; }
+-dontwarn com.google.android.play.core.**
+-keep class com.google.android.play.core.splitcompat.** { *; }
+-keep class com.google.android.play.core.splitinstall.** { *; }
+-keep class com.google.android.play.core.tasks.** { *; }
+
 # Keep reflection-related classes that might cause NullPointerExceptions
 -keepattributes Signature
 -keepattributes *Annotation*
