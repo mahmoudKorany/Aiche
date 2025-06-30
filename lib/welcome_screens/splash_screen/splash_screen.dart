@@ -127,7 +127,7 @@ class _SplashScreenState extends State<SplashScreen>
                                                 scale: _scaleAnimation,
                                                 child: Image.asset(
                                                   'assets/images/splash.png',
-                                                  height: 150.h,
+                                                  height: 200.h,
                                                 ),
                                               ),
                                               const Gap30(),
