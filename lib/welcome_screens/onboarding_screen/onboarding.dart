@@ -30,7 +30,7 @@ class _OnboardingState extends State<Onboarding> {
         image: 'assets/images/onboarding_1.png',
         title: 'Welcome to AIChE Suez University App!',
         body:
-            '"Connect, Learn, and Lead With AIChe." \n Stay Updated with Chapter Events, Access Exclusive Resources, Enhance Your Professional journey.',
+            'Connect, Learn, and Lead With AIChe. \n Stay Updated with Chapter Events, Access Exclusive Resources, Enhance Your Professional journey.',
       ),
       OnboardingModel(
         image: 'assets/images/onboarding_2.png',
@@ -60,7 +60,7 @@ class _OnboardingState extends State<Onboarding> {
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Gap100(),
+              const Gap100(),
               SizedBox(
                 height: screenHeight / 1.5,
                 width: double.infinity,
@@ -101,7 +101,7 @@ class _OnboardingState extends State<Onboarding> {
                                 key: 'onBoarding', value: true)
                             .then((value) {
                           navigateAndFinish(
-                              context: context, widget: LoginScreen());
+                              context: context, widget: const LoginScreen());
                         });
                       },
                       child: Text(
@@ -140,7 +140,8 @@ class _OnboardingState extends State<Onboarding> {
                                     key: 'onBoarding', value: true)
                                 .then((value) {
                               navigateAndFinish(
-                                  context: context, widget: LoginScreen());
+                                  context: context,
+                                  widget: const LoginScreen());
                             });
                           } else {
                             boardController
@@ -179,25 +180,30 @@ Widget boardingItemBuilder(
           fit: BoxFit.cover,
         ),
         const Gap40(),
-        Text(
-          model.title,
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            //background:  #EDC53A;
-            color: HexColor('EDC53A'),
-            fontSize: 30.sp,
-            fontWeight: FontWeight.bold,
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.w),
+          child: Text(
+            model.title,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              //background:  #EDC53A;
+              color: HexColor('EDC53A'),
+              fontSize: 30.sp,
+              fontWeight: FontWeight.bold,
+              height: 1.2,
+            ),
           ),
         ),
         Padding(
-          padding: const EdgeInsets.all(15.0),
+          padding: EdgeInsets.symmetric(horizontal: 25.w, vertical: 15.h),
           child: Text(
             model.body,
-            textAlign: TextAlign.start,
+            textAlign: TextAlign.center,
             style: TextStyle(
               color: Colors.white,
               fontSize: 17.sp,
               fontWeight: FontWeight.w400,
+              height: 1.4,
             ),
           ),
         ),
