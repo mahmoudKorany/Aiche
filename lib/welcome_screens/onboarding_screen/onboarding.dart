@@ -30,7 +30,7 @@ class _OnboardingState extends State<Onboarding> {
         image: 'assets/images/onboarding_1.png',
         title: 'Welcome to AIChE Suez University App!',
         body:
-            'Connect, Learn, and Lead With AIChe. \n Stay Updated with Chapter Events, Access Exclusive Resources, Enhance Your Professional journey.',
+            'Connect, Learn, and Lead With AIChE. \n Stay Updated with Chapter Events, Access Exclusive Resources, Enhance Your Professional journey.',
       ),
       OnboardingModel(
         image: 'assets/images/onboarding_2.png',
