@@ -28,7 +28,7 @@ class _OnboardingState extends State<Onboarding> {
     List<OnboardingModel> onboarding = [
       OnboardingModel(
         image: 'assets/images/onboarding_1.png',
-        title: 'Welcome to AIChe Suez University App!',
+        title: 'Welcome to AIChE Suez University App!',
         body:
             '"Connect, Learn, and Lead With AIChe." \n Stay Updated with Chapter Events, Access Exclusive Resources, Enhance Your Professional journey.',
       ),
@@ -42,7 +42,7 @@ class _OnboardingState extends State<Onboarding> {
         image: 'assets/images/onboarding_3.png',
         title: 'Get Started Today!',
         body:
-            'Join the AIChe Suez University Community, Connect with Members, and Stay Updated with the Latest News and Updates.',
+            'Join the AIChE Suez University Community, Connect with Members, and Stay Updated with the Latest News and Updates.',
       ),
     ];
     return Scaffold(
@@ -50,7 +50,7 @@ class _OnboardingState extends State<Onboarding> {
       body: Stack(
         alignment: Alignment.bottomCenter,
         children: [
-          BackGround(),
+          const BackGround(),
           Image.asset(
             'assets/images/onboarding_bg.png',
             height: screenHeight / 1.77,
