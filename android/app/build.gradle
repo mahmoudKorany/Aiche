@@ -32,7 +32,7 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace "com.aiche.aiche"
-    compileSdkVersion 34
+    compileSdkVersion 35
     ndkVersion = "27.0.12077973"
 
     compileOptions {
@@ -53,7 +53,7 @@ android {
     defaultConfig {
         applicationId "com.aiche.aiche"
         minSdkVersion 23
-        targetSdkVersion flutter.targetSdkVersion
+        targetSdkVersion 35
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true
