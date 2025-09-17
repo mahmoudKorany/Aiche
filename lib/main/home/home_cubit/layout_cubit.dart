@@ -10,7 +10,6 @@ import 'package:aiche/main/home/model/banner_model.dart';
 import 'package:aiche/main/home/model/material_model.dart';
 import 'package:aiche/main/sessions/model/session_model.dart';
 import 'package:aiche/main/shop/shop_screen/shop_screen.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -42,25 +41,34 @@ class LayoutCubit extends Cubit<LayoutState> {
   Future<void> getHomeBanner() async {
     bannerList = [];
     emit(LayoutGetBannerLoading());
-    try {
-      await DioHelper.getData(
-        url: UrlConstants.getHomeBanner,
-        query: {},
-        token: token??''
-      ).then((value) async{
-        if (value.statusCode == 200) {
-          for (var element in value.data['baners']) {
-            bannerList.add(BannerModel.fromJson(element));
-          }
-          await getAwards();
-          await getMaterial();
-        } else {
-          emit(LayoutGetBannerError(value.statusMessage.toString()));
-        }
-      });
+
+    final response = await DioHelper.getData(
+        url: UrlConstants.getHomeBanner, query: {}, token: token ?? '');
+
+    // Check if the response contains an error
+    if (response.data != null &&
+        response.data is Map &&
+        response.data['error'] == true) {
+      String errorMessage = response.data['message'] ?? 'Failed to load banner';
+      emit(LayoutGetBannerError(errorMessage));
+      return;
+    }
+
+    if (response.statusCode == 200) {
+      for (var element in response.data['baners']) {
+        bannerList.add(BannerModel.fromJson(element));
+      }
+      await getAwards();
+      await getMaterial();
       emit(LayoutGetBannerSuccess());
-    } catch (error) {
-      emit(LayoutGetBannerError(error.toString()));
+    } else {
+      String errorMessage = 'Failed to load banner';
+      if (response.data != null &&
+          response.data is Map &&
+          response.data['message'] != null) {
+        errorMessage = response.data['message'];
+      }
+      emit(LayoutGetBannerError(errorMessage));
     }
   }
 
@@ -70,26 +78,38 @@ class LayoutCubit extends Cubit<LayoutState> {
   Future<void> getMaterial() async {
     materialList = [];
     emit(LayoutGetMaterialLoading());
-    try {
-      await DioHelper.getData(
-        url: UrlConstants.getMaterial,
-        query: {},
-        token: token??'',
-      ).then((value) {
-        if (value.statusCode == 200) {
-          for (var element in value.data['data']['date']) {
-            materialList.add(MaterialModel.fromJson(element));
-          }
-        } else {
-          emit(LayoutGetMaterialError(value.statusMessage.toString()));
-        }
-      });
+
+    final response = await DioHelper.getData(
+      url: UrlConstants.getMaterial,
+      query: {},
+      token: token ?? '',
+    );
+
+    // Check if the response contains an error
+    if (response.data != null &&
+        response.data is Map &&
+        response.data['error'] == true) {
+      String errorMessage =
+          response.data['message'] ?? 'Failed to load material';
+      emit(LayoutGetMaterialError(errorMessage));
+      return;
+    }
+
+    if (response.statusCode == 200) {
+      for (var element in response.data['data']['date']) {
+        materialList.add(MaterialModel.fromJson(element));
+      }
       emit(LayoutGetMaterialSuccess());
-    } catch (error) {
-      emit(LayoutGetMaterialError(error.toString()));
+    } else {
+      String errorMessage = 'Failed to load material';
+      if (response.data != null &&
+          response.data is Map &&
+          response.data['message'] != null) {
+        errorMessage = response.data['message'];
+      }
+      emit(LayoutGetMaterialError(errorMessage));
     }
   }
-
 
   //get awards
   var awardsList = <AwardsModel>[];
@@ -97,50 +117,76 @@ class LayoutCubit extends Cubit<LayoutState> {
   Future<void> getAwards() async {
     awardsList = [];
     emit(LayoutGetAwardsLoading());
-    try {
-      await DioHelper.getData(
-        url: UrlConstants.getAwards,
-        query: {},
-        token: token??'',
-      ).then((value) {
-        if (value.statusCode == 200) {
-          for (var element in value.data['data']) {
-            awardsList.add(AwardsModel.fromJson(element));
-          }
-        } else {
-          emit(LayoutGetAwardsError(value.statusMessage.toString()));
-        }
-      });
+
+    final response = await DioHelper.getData(
+      url: UrlConstants.getAwards,
+      query: {},
+      token: token ?? '',
+    );
+
+    // Check if the response contains an error
+    if (response.data != null &&
+        response.data is Map &&
+        response.data['error'] == true) {
+      String errorMessage = response.data['message'] ?? 'Failed to load awards';
+      emit(LayoutGetAwardsError(errorMessage));
+      return;
+    }
+
+    if (response.statusCode == 200) {
+      for (var element in response.data['data']) {
+        awardsList.add(AwardsModel.fromJson(element));
+      }
       emit(LayoutGetAwardsSuccess());
-    } catch (error) {
-      emit(LayoutGetAwardsError(error.toString()));
+    } else {
+      String errorMessage = 'Failed to load awards';
+      if (response.data != null &&
+          response.data is Map &&
+          response.data['message'] != null) {
+        errorMessage = response.data['message'];
+      }
+      emit(LayoutGetAwardsError(errorMessage));
     }
   }
-
 
   // request join
   Future<void> requestJoinCommittee({
     required int committeeId,
   }) async {
     emit(LayoutRequestJoinLoading());
-    try {
-      await DioHelper.postData(
-        url: UrlConstants.requestJoin,
-        data: {
-          'committee_id': committeeId,
-        },
-        token: token??'',
-      ).then((value) {
-        if (value.statusCode == 200) {
 
-          emit(LayoutRequestJoinSuccess());
-        } else {
-          emit(LayoutRequestJoinError(value.statusMessage.toString()));
-        }
-      });
-    } catch (error) {
-      showToast(msg: "Failed to request join : Maybe you are already member of committee", state: MsgState.error );
-      emit(LayoutRequestJoinError(error.toString()));
+    final response = await DioHelper.postData(
+      url: UrlConstants.requestJoin,
+      data: {
+        'committee_id': committeeId,
+      },
+      token: token ?? '',
+    );
+
+    // Check if the response contains an error
+    if (response.data != null &&
+        response.data is Map &&
+        response.data['error'] == true) {
+      String errorMessage =
+          response.data['message'] ?? 'Failed to request join committee';
+      showToast(msg: errorMessage, state: MsgState.error);
+      emit(LayoutRequestJoinError(errorMessage));
+      return;
+    }
+
+    if (response.statusCode == 200) {
+      showToast(
+          msg: 'Join request sent successfully!', state: MsgState.success);
+      emit(LayoutRequestJoinSuccess());
+    } else {
+      String errorMessage = 'Failed to request join committee';
+      if (response.data != null &&
+          response.data is Map &&
+          response.data['message'] != null) {
+        errorMessage = response.data['message'];
+      }
+      showToast(msg: errorMessage, state: MsgState.error);
+      emit(LayoutRequestJoinError(errorMessage));
     }
   }
 
@@ -149,23 +195,36 @@ class LayoutCubit extends Cubit<LayoutState> {
   Future<void> getUserSessions() async {
     userSessions = [];
     emit(LayoutGetUserSessionsLoading());
-    try {
-       await DioHelper.getData(
-        url: UrlConstants.getSessions,
-        query: {},
-        token: token??'',
-      ).then((value) {
-        if (value.statusCode == 200) {
-          for (var element in value.data['data']) {
-            userSessions.add(SessionModel.fromJson(element));
-          }
-        } else {
-          emit(LayoutGetUserSessionsError(value.statusMessage.toString()));
-        }
-      });
+
+    final response = await DioHelper.getData(
+      url: UrlConstants.getSessions,
+      query: {},
+      token: token ?? '',
+    );
+
+    // Check if the response contains an error
+    if (response.data != null &&
+        response.data is Map &&
+        response.data['error'] == true) {
+      String errorMessage =
+          response.data['message'] ?? 'Failed to load user sessions';
+      emit(LayoutGetUserSessionsError(errorMessage));
+      return;
+    }
+
+    if (response.statusCode == 200) {
+      for (var element in response.data['data']) {
+        userSessions.add(SessionModel.fromJson(element));
+      }
       emit(LayoutGetUserSessionsSuccess());
-    } catch (error) {
-      emit(LayoutGetUserSessionsError(error.toString()));
+    } else {
+      String errorMessage = 'Failed to load user sessions';
+      if (response.data != null &&
+          response.data is Map &&
+          response.data['message'] != null) {
+        errorMessage = response.data['message'];
+      }
+      emit(LayoutGetUserSessionsError(errorMessage));
     }
   }
 }

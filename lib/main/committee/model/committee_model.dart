@@ -15,8 +15,16 @@ class CommitteeModel {
     if (json['admins'] != null) {
       admins = <Admins>[];
       json['admins'].forEach((v) {
-        admins!.add(Admins.fromJson(v));
+        if (v['name'] != 'admin' &&
+            v['name'] != 'Fatma Gamal' &&
+            v['name'] != 'abdallah' &&
+            v['name'] != 'fatma g') {
+          admins!.add(Admins.fromJson(v));
+        }
       });
+      // remove duplicates
+      final ids = <String>{};
+      admins = admins!.where((admin) => ids.add(admin.title!)).toList();
     }
   }
 
@@ -34,21 +42,24 @@ class CommitteeModel {
 }
 
 class Admins {
+  int? id;
   String? name;
   String? title;
   Profile? profile;
 
-  Admins({this.name, this.title, this.profile});
+  Admins({this.id, this.name, this.title, this.profile});
 
   Admins.fromJson(Map<String, dynamic> json) {
+    id = json['id'];
     name = json['name'];
     title = json['title'];
     profile =
-    json['profile'] != null ? Profile.fromJson(json['profile']) : null;
+        json['profile'] != null ? Profile.fromJson(json['profile']) : null;
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
+    data['id'] = id;
     data['name'] = name;
     data['title'] = title;
     if (profile != null) {
@@ -70,17 +81,19 @@ class Profile {
 
   Profile(
       {this.id,
-        this.userId,
-        this.image,
-        this.bio,
-        this.phone,
-        this.linkedin,
-        this.createdAt,
-        this.updatedAt});
+      this.userId,
+      this.image,
+      this.bio,
+      this.phone,
+      this.linkedin,
+      this.createdAt,
+      this.updatedAt});
 
   Profile.fromJson(Map<String, dynamic> json) {
-    id = json['id'];
-    userId = json['user_id'];
+    id = json['id'] is String ? int.tryParse(json['id']) : json['id'];
+    userId = json['user_id'] is String
+        ? int.tryParse(json['user_id'])
+        : json['user_id'];
     image = json['image'];
     bio = json['bio'];
     phone = json['phone'];

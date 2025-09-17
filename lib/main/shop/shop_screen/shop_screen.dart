@@ -13,6 +13,7 @@ import 'package:conditional_builder_null_safety/conditional_builder_null_safety.
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:loading_indicator/loading_indicator.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -290,7 +291,7 @@ class _ShopScreenState extends State<ShopScreen> {
             children: [
               const BackGround(),
               SafeArea(
-                bottom: false,
+                bottom: true,
                 child: _buildContent(context, shopCubit),
               ),
             ],
@@ -325,13 +326,12 @@ class _ShopScreenState extends State<ShopScreen> {
     }
 
     return RefreshIndicator(
-      onRefresh: ()async {
-         await ShopCubit.get(context).getAllCollections();
-       await  ShopCubit.get(context).getAllProducts();
-        },
+      onRefresh: () async {
+        await ShopCubit.get(context).getAllCollections();
+        await ShopCubit.get(context).getAllProducts();
+      },
       child: SingleChildScrollView(
-        physics:
-        const AlwaysScrollableScrollPhysics(
+        physics: const AlwaysScrollableScrollPhysics(
           parent: BouncingScrollPhysics(),
         ),
         padding: EdgeInsets.symmetric(
@@ -344,7 +344,9 @@ class _ShopScreenState extends State<ShopScreen> {
             Row(
               children: [
                 const DrawerIcon(),
-                const Gap10(isHorizontal: true,),
+                const Gap10(
+                  isHorizontal: true,
+                ),
                 Text(
                   'Shop',
                   style: TextStyle(
@@ -370,7 +372,8 @@ class _ShopScreenState extends State<ShopScreen> {
             shopCubit.allCollections.isEmpty
                 ? _buildEmptyState("No Collections Available",
                     "There are currently no collections to display.")
-                : _buildCollectionsSection(shopCubit.allCollections, screenWidth),
+                : _buildCollectionsSection(
+                    shopCubit.allCollections, screenWidth),
 
             SizedBox(height: screenHeight * 0.03),
 
@@ -389,6 +392,9 @@ class _ShopScreenState extends State<ShopScreen> {
                     "There are currently no products to display.")
                 : _buildProductsGrid(
                     shopCubit.allProducts, crossAxisCount, screenWidth),
+
+            // Bottom spacing for navigation bar
+            SizedBox(height: Platform.isIOS ? 100.h : 120.h),
           ],
         ),
       ),
@@ -707,7 +713,6 @@ class _ShopScreenState extends State<ShopScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              // Image placeholder
                               Container(
                                 height: screenWidth < 600
                                     ? 130

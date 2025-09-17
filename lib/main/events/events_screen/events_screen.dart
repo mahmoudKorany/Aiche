@@ -239,7 +239,7 @@ class EventsScreen extends StatelessWidget {
                                     },
                                   ),
                       ),
-                      SizedBox(height: 85.h)
+                      SizedBox(height: 85.h),
                     ],
                   ),
                 ),

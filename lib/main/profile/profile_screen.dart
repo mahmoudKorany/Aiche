@@ -203,14 +203,6 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
   }
 
   // Helper method to format date string
-  String _formatDate(String dateString) {
-    try {
-      final DateTime date = DateTime.parse(dateString);
-      return "${date.day}/${date.month}/${date.year}";
-    } catch (e) {
-      return dateString;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -388,14 +380,16 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
 
                               // Phone Number
                               GestureDetector(
-                                onTap: (){
-                                  launchUrl(Uri.parse('tel:${widget.userModel.phone}'));
+                                onTap: () {
+                                  launchUrl(Uri.parse(
+                                      'tel:${widget.userModel.phone}'));
                                 },
                                 child: _buildAnimatedInfoCard(
                                   title: "Phone Number",
-                                  content: widget.userModel.phone?.isEmpty ?? true
-                                      ? "No phone number available"
-                                      : widget.userModel.phone!,
+                                  content:
+                                      widget.userModel.phone?.isEmpty ?? true
+                                          ? "No phone number available"
+                                          : widget.userModel.phone!,
                                   icon: Icons.phone_outlined,
                                   delay: 0.1,
                                 ),
@@ -409,7 +403,8 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                                   final double end = 0.2 + 0.3;
                                   final curvedAnimation = CurvedAnimation(
                                     parent: _controller,
-                                    curve: Interval(begin, end, curve: Curves.easeOut),
+                                    curve: Interval(begin, end,
+                                        curve: Curves.easeOut),
                                   );
 
                                   return Transform.translate(
@@ -420,40 +415,53 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                                     child: Opacity(
                                       opacity: curvedAnimation.value,
                                       child: GestureDetector(
-                                        onTap:   widget.userModel.linkedInLink != null && widget.userModel.linkedInLink!.isNotEmpty
+                                        onTap: widget.userModel.linkedInLink !=
+                                                    null &&
+                                                widget.userModel.linkedInLink!
+                                                    .isNotEmpty
                                             ? () {
-                                          launchUrl(Uri.parse(widget.userModel.linkedInLink??''));
-                                        }
+                                                launchUrl(Uri.parse(widget
+                                                        .userModel
+                                                        .linkedInLink ??
+                                                    ''));
+                                              }
                                             : null,
                                         child: Container(
                                           margin: EdgeInsets.only(bottom: 15.h),
                                           padding: EdgeInsets.all(15.r),
                                           decoration: BoxDecoration(
                                             color: Colors.white,
-                                            borderRadius: BorderRadius.circular(15.r),
+                                            borderRadius:
+                                                BorderRadius.circular(15.r),
                                             boxShadow: [
                                               BoxShadow(
-                                                color: Colors.blue.withOpacity(0.08),
+                                                color: Colors.blue
+                                                    .withOpacity(0.08),
                                                 spreadRadius: 2,
                                                 blurRadius: 8,
                                                 offset: const Offset(0, 3),
                                               ),
                                             ],
                                             border: Border.all(
-                                              color: Colors.blue.withOpacity(0.1),
+                                              color:
+                                                  Colors.blue.withOpacity(0.1),
                                               width: 1,
                                             ),
                                           ),
                                           child: Row(
-                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
                                               Container(
                                                 padding: EdgeInsets.all(8.r),
                                                 decoration: BoxDecoration(
-                                                  color: Colors.blue.withOpacity(0.1),
-                                                  borderRadius: BorderRadius.circular(10.r),
+                                                  color: Colors.blue
+                                                      .withOpacity(0.1),
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          10.r),
                                                 ),
-                                                child:  Image.asset(
+                                                child: Image.asset(
                                                   'assets/images/linkedin.png',
                                                   height: 24.r,
                                                   width: 24.r,
@@ -464,29 +472,38 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                                               ),
                                               Expanded(
                                                 child: Column(
-                                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
                                                   children: [
                                                     Text(
                                                       'LinkedIn Profile',
                                                       style: TextStyle(
                                                         fontSize: 16.sp,
-                                                        fontWeight: FontWeight.bold,
+                                                        fontWeight:
+                                                            FontWeight.bold,
                                                         color: Colors.black87,
                                                       ),
                                                     ),
                                                     const Gap5(),
                                                     Text(
-                                                      widget.userModel.linkedInLink ?? "No LinkedIn profile available",
+                                                      widget.userModel
+                                                              .linkedInLink ??
+                                                          "No LinkedIn profile available",
                                                       maxLines: 1,
                                                       style: TextStyle(
                                                         fontSize: 15.sp,
-                                                        color: Colors.grey.shade700,
+                                                        color: Colors
+                                                            .grey.shade700,
                                                       ),
                                                     ),
                                                   ],
                                                 ),
                                               ),
-                                              if ( widget.userModel.linkedInLink != null && widget.userModel.linkedInLink!.isNotEmpty)
+                                              if (widget.userModel
+                                                          .linkedInLink !=
+                                                      null &&
+                                                  widget.userModel.linkedInLink!
+                                                      .isNotEmpty)
                                                 Icon(
                                                   Icons.launch,
                                                   color: Colors.blue,

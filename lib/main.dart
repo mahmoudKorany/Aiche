@@ -15,19 +15,6 @@ import 'core/controllers/notification_controller.dart';
 import 'firebase_options.dart';
 import 'my_app.dart';
 
-Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  if (kDebugMode) {
-    print('Handling a background message ${message.messageId}');
-  }
-  AwesomeNotifications().createNotification(
-    content: NotificationContent(
-      id: 1,
-      channelKey: "basic_channel",
-      title: message.notification?.title ?? '',
-      body: message.notification?.body ?? '',
-    ),
-  );
-}
 
 Widget? startScreen;
 void main() async {

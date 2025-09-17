@@ -22,7 +22,7 @@ class BlogsScreen extends StatelessWidget {
             children: [
               const BackGround(),
               SafeArea(
-                bottom: false,
+                bottom: true,
                 child: Padding(
                   padding: EdgeInsets.all(20.0.r),
                   child: RefreshIndicator(
@@ -58,7 +58,9 @@ class BlogsScreen extends StatelessWidget {
                           const BlogsCard(
                             fromHome: false,
                           ),
-                        const Gap90(),
+                        // Bottom spacing for navigation bar
+                        //SizedBox(height: Platform.isIOS ? 100.h : 120.h),
+                        //const Gap90(),
                       ],
                     ),
                   ),

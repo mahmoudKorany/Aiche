@@ -29,7 +29,7 @@ class HomeBody extends StatelessWidget {
         children: [
           const BackGround(),
           SafeArea(
-            bottom: false,
+            bottom: true,
             child: RefreshIndicator(
               onRefresh: () async {
                 // Refresh the data when pulled down
@@ -45,8 +45,7 @@ class HomeBody extends StatelessWidget {
                   horizontal: 20.0.w,
                   vertical: 20.0.h,
                 ),
-                physics:
-                const AlwaysScrollableScrollPhysics(
+                physics: const AlwaysScrollableScrollPhysics(
                   parent: BouncingScrollPhysics(),
                 ),
                 child: Column(
@@ -88,7 +87,8 @@ class HomeBody extends StatelessWidget {
                         const Spacer(),
                         InkWell(
                           onTap: () {
-                            LayoutCubit.get(context).changeBottomNavBar(1, context);
+                            LayoutCubit.get(context)
+                                .changeBottomNavBar(1, context);
                           },
                           child: Text(
                             'View All',
@@ -113,7 +113,10 @@ class HomeBody extends StatelessWidget {
                           return HomeShimmerComponents.buildBlogsShimmer(
                               fromHome: true);
                         } else {
-                          return const BlogsCard(fromHome: true);
+                          return SizedBox(
+                            height: 140.h,
+                            child: const BlogsCard(fromHome: true),
+                          );
                         }
                       },
                     ),
@@ -132,7 +135,9 @@ class HomeBody extends StatelessWidget {
                         const Spacer(),
                         InkWell(
                           onTap: () {
-                            navigateTo(context: context, widget: const AllCommitteesScreen());
+                            navigateTo(
+                                context: context,
+                                widget: const AllCommitteesScreen());
                           },
                           child: Text(
                             'View All',
@@ -163,6 +168,9 @@ class HomeBody extends StatelessWidget {
                     ),
 
                     const Gap100(),
+
+                    // Bottom spacing for navigation bar
+                    //SizedBox(height: Platform.isIOS ? 100.h : 120.h),
                   ],
                 ),
               ),

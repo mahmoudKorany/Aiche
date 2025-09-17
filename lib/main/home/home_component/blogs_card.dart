@@ -52,11 +52,14 @@ class _BlogsCardState extends State<BlogsCard>
           return Expanded(
             child: ListView.separated(
               padding: EdgeInsets.zero,
-              physics:
-              const AlwaysScrollableScrollPhysics(
+              physics: const AlwaysScrollableScrollPhysics(
                 parent: BouncingScrollPhysics(),
               ),
               itemBuilder: (context, index) {
+                if (index == BlogsCubit.get(context).blogs.length) {
+                  return const Gap50();
+                }
+
                 return AnimatedBuilder(
                   animation: _scaleAnimation,
                   builder: (context, child) => Transform.scale(
@@ -112,7 +115,7 @@ class _BlogsCardState extends State<BlogsCard>
                                   Row(
                                     children: [
                                       _buildAvatar(index),
-                                      Gap5(isHorizontal: true),
+                                      const Gap5(isHorizontal: true),
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment:
@@ -138,8 +141,10 @@ class _BlogsCardState extends State<BlogsCard>
                   ),
                 );
               },
-              separatorBuilder: (context, index) => Gap15(),
-              itemCount: BlogsCubit.get(context).blogs.length,
+              separatorBuilder: (context, index) {
+                return const Gap15();
+              },
+              itemCount: BlogsCubit.get(context).blogs.length + 1,
             ),
           );
         },
@@ -155,89 +160,93 @@ class _BlogsCardState extends State<BlogsCard>
               scrollDirection: Axis.horizontal,
               physics: const BouncingScrollPhysics(),
               itemBuilder: (context, index) {
+                if (index == BlogsCubit.get(context).blogs.length) {
+                  return const Gap50();
+                }
                 return AnimatedBuilder(
-                  animation: _scaleAnimation,
-                  builder: (context, child) => Transform.scale(
-                    scale: _scaleAnimation.value,
-                    child: child,
-                  ),
-                  child: GestureDetector(
-                    onTapDown: (_) => _controller.forward(),
-                    onTapUp: (_) => _controller.reverse(),
-                    onTapCancel: () => _controller.reverse(),
-                    child: Container(
-                      width: 310.0.w,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            HexColor('03172C'),
-                            HexColor('081F3C'),
+                    animation: _scaleAnimation,
+                    builder: (context, child) => Transform.scale(
+                          scale: _scaleAnimation.value,
+                          child: child,
+                        ),
+                    child: GestureDetector(
+                      onTapDown: (_) => _controller.forward(),
+                      onTapUp: (_) => _controller.reverse(),
+                      onTapCancel: () => _controller.reverse(),
+                      child: Container(
+                        width: 310.0.w,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              HexColor('03172C'),
+                              HexColor('081F3C'),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(20.r),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.1),
+                            width: 1,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              spreadRadius: 1,
+                              blurRadius: 15,
+                              offset: const Offset(0, 5),
+                            ),
                           ],
                         ),
-                        borderRadius: BorderRadius.circular(20.r),
-                        border: Border.all(
-                          color: Colors.white.withOpacity(0.1),
-                          width: 1,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            spreadRadius: 1,
-                            blurRadius: 15,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20.r),
-                        child: Material(
-                          color: Colors.transparent,
-                          child: InkWell(
-                            onTap: () {
-                              navigateTo(
-                                  context: context,
-                                  widget: BlogDetailsScreen(
-                                    blog: BlogsCubit.get(context).blogs[index],
-                                  ));
-                            },
-                            child: Padding(
-                              padding: EdgeInsets.all(16.w),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      _buildAvatar(index),
-                                      Gap5(isHorizontal: true),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            _buildAuthorName(index: index),
-                                            SizedBox(height: 4.h),
-                                            _buildMetadata(index: index),
-                                          ],
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20.r),
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap: () {
+                                navigateTo(
+                                    context: context,
+                                    widget: BlogDetailsScreen(
+                                      blog:
+                                          BlogsCubit.get(context).blogs[index],
+                                    ));
+                              },
+                              child: Padding(
+                                padding: EdgeInsets.all(16.w),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        _buildAvatar(index),
+                                        const Gap5(isHorizontal: true),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              _buildAuthorName(index: index),
+                                              SizedBox(height: 4.h),
+                                              _buildMetadata(index: index),
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                  const Gap5(),
-                                  _buildContent(index: index),
-                                ],
+                                      ],
+                                    ),
+                                    const Gap5(),
+                                    _buildContent(index: index),
+                                  ],
+                                ),
                               ),
                             ),
                           ),
                         ),
                       ),
-                    ),
-                  ),
-                );
+                    ));
               },
-              separatorBuilder: (context, index) => Gap15(isHorizontal: true),
-              itemCount: BlogsCubit.get(context).blogs.length,
+              separatorBuilder: (context, index) =>
+                  const Gap15(isHorizontal: true),
+              itemCount: BlogsCubit.get(context).blogs.length + 1,
             ),
           );
         },
@@ -250,25 +259,25 @@ class _BlogsCardState extends State<BlogsCard>
       tag: 'blog_avatar_$index',
       child: Container(
         padding: EdgeInsets.all(2.w),
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           shape: BoxShape.circle,
-          gradient: LinearGradient(
-            colors: [
-              Colors.blue.withOpacity(0.5),
-              Colors.purple.withOpacity(0.5),
-            ],
-          ),
+          color: Colors.white,
         ),
         child: CircleAvatar(
           radius: 22.r,
-          backgroundColor: Colors.white10,
+          backgroundColor: Colors.white,
           child: CircleAvatar(
             radius: 20.r,
-            backgroundImage: BlogsCubit.get(context).blogs[index].user!.imageUrl != null ? CachedNetworkImageProvider(
-              BlogsCubit.get(context).blogs[index].user!.imageUrl ?? '',
-            ) : const AssetImage(
-              'assets/images/person.png',
-            ) as ImageProvider,
+            backgroundColor: Colors.white,
+            backgroundImage:
+                BlogsCubit.get(context).blogs[index].user!.imageUrl != null
+                    ? CachedNetworkImageProvider(
+                        BlogsCubit.get(context).blogs[index].user!.imageUrl ??
+                            '',
+                      )
+                    : const AssetImage(
+                        'assets/images/person.png',
+                      ) as ImageProvider,
           ),
         ),
       ),
@@ -276,12 +285,17 @@ class _BlogsCardState extends State<BlogsCard>
   }
 
   Widget _buildAuthorName({required int index}) {
+    String name = BlogsCubit.get(context).blogs[index].user?.name ?? '';
+    if (name == 'superadmin') {
+      name = 'AIChE SUSC';
+    }
+
     return Shimmer.fromColors(
       baseColor: Colors.white,
       highlightColor: Colors.white70,
       period: const Duration(seconds: 2),
       child: Text(
-        BlogsCubit.get(context).blogs[index].user!.name ?? '',
+        name,
         style: TextStyle(
           fontSize: 16.sp,
           fontWeight: FontWeight.bold,
@@ -292,6 +306,10 @@ class _BlogsCardState extends State<BlogsCard>
   }
 
   Widget _buildMetadata({required int index}) {
+    String title = BlogsCubit.get(context).blogs[index].user?.title ?? '';
+    if (title == 'admim') {
+      title = 'admin';
+    }
     return SizedBox(
       height: 30.h,
       child: SingleChildScrollView(
@@ -335,7 +353,7 @@ class _BlogsCardState extends State<BlogsCard>
                 ),
               ),
               child: Text(
-                BlogsCubit.get(context).blogs[index].user?.title ?? '',
+                title,
                 style: TextStyle(
                   fontSize: 12.sp,
                   color: Colors.white70,
@@ -350,16 +368,19 @@ class _BlogsCardState extends State<BlogsCard>
   }
 
   Widget _buildContent({required int index}) {
-    return Text(
-      BlogsCubit.get(context).blogs[index].description ?? '',
-      style: TextStyle(
-        fontSize: 13.sp,
-        color: Colors.white.withOpacity(0.9),
-        height: 1.5,
-        letterSpacing: 0.3,
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Text(
+        BlogsCubit.get(context).blogs[index].description ?? '',
+        style: TextStyle(
+          fontSize: 13.sp,
+          color: Colors.white.withOpacity(0.9),
+          height: 1.5,
+          letterSpacing: 0.3,
+        ),
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
       ),
-      maxLines: 5,
-      overflow: TextOverflow.ellipsis,
     );
   }
 }

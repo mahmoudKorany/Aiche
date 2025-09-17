@@ -203,14 +203,6 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
   }
 
   // Helper method to format date string
-  String _formatDate(String dateString) {
-    try {
-      final DateTime date = DateTime.parse(dateString);
-      return "${date.day}/${date.month}/${date.year}";
-    } catch (e) {
-      return dateString;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {

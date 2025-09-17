@@ -195,7 +195,7 @@ class _MaterialScreenState extends State<MaterialScreen>
                   elevation: 0,
                   centerTitle: true,
                   leading: Padding(
-                    padding:  EdgeInsets.all(8.0.r),
+                    padding: EdgeInsets.all(8.0.r),
                     child: const Pop(),
                   ),
                   systemOverlayStyle: SystemUiOverlayStyle.light,
@@ -423,7 +423,8 @@ class _MaterialScreenState extends State<MaterialScreen>
                                       itemCount: filteredMaterials.length,
                                       itemBuilder: (context, index) {
                                         var material = filteredMaterials[index];
-                                        return _buildMaterialCard(material);
+                                        return _buildMaterialCard(
+                                            material, index);
                                       },
                                     ),
                                   ),
@@ -439,7 +440,7 @@ class _MaterialScreenState extends State<MaterialScreen>
     );
   }
 
-  Widget _buildMaterialCard(MaterialModel material) {
+  Widget _buildMaterialCard(MaterialModel material, int index) {
     return FadeTransition(
       opacity: _fadeAnimation,
       child: SlideTransition(
@@ -480,7 +481,8 @@ class _MaterialScreenState extends State<MaterialScreen>
                             borderRadius: BorderRadius.circular(12.r),
                           ),
                           child: Hero(
-                            tag: 'material_${material.name}',
+                            tag:
+                                'material_${material.name ?? 'unknown'}_$index',
                             child: Image.asset(
                               'assets/images/material.png',
                               height: 32.h,

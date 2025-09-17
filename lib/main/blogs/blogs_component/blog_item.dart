@@ -66,8 +66,9 @@ class BlogItem extends StatelessWidget {
                   ),
                   child: CircleAvatar(
                     radius: 20.r,
+                    backgroundColor: Colors.white,
                     backgroundImage: CachedNetworkImageProvider(
-                      BlogsCubit.get(context).blogs[index].user?.imageUrl??'',
+                      BlogsCubit.get(context).blogs[index].user?.imageUrl ?? '',
                     ),
                   ),
                 ),
@@ -78,7 +79,7 @@ class BlogItem extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                         BlogsCubit.get(context).blogs[index].user?.name??'',
+                        BlogsCubit.get(context).blogs[index].user?.name ?? '',
                         style: TextStyle(
                           fontSize: 16.0.sp,
                           fontWeight: FontWeight.bold,

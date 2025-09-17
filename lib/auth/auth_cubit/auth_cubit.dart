@@ -48,51 +48,62 @@ class AuthCubit extends Cubit<AuthState> {
       }
       // Continue with login even if we can't get FCM token
     }
-    try {
-      final response = await DioHelper.postData(
-        url: UrlConstants.login,
-        data: {
-          'email': email,
-          'password': password,
-          "fcm_token":
-              fcmToken ?? 'debug_mode_${DateTime.now().millisecondsSinceEpoch}'
-        },
-      );
 
-      if (response.statusCode == 200) {
-        try {
-          if (response.data != null &&
-              response.data is Map &&
-              response.data['token'] != null) {
-            final tokenValue = response.data['token']?.toString();
-            await CacheHelper.saveData(key: 'token', value: tokenValue);
-          }
-          await getUserData();
-          await Future.wait([
-            TasksCubit.get(context).getTasksFromApi(),
-            BlogsCubit.get(context).getBlogs(),
-            LayoutCubit.get(context).getHomeBanner(),
-            LayoutCubit.get(context).getAwards(),
-            LayoutCubit.get(context).getMaterial(),
-            EventsCubit.get(context).fetchEvents(),
-            ShopCubit.get(context).getAllCollections(),
-            ShopCubit.get(context).getAllProducts(),
-            CommitteeCubit.get(context).getCommitteeData(),
-          ]);
-          emit(AuthSuccess());
-          navigateAndFinish(context: context, widget: const HomeLayoutScreen());
-          showToast(msg: 'Login done Successfully', state: MsgState.success);
-        } catch (e) {
-          emit(AuthError("Error parsing response data"));
+    final response = await DioHelper.postData(
+      url: UrlConstants.login,
+      data: {
+        'email': email,
+        'password': password,
+        "fcm_token":
+            fcmToken ?? 'debug_mode_${DateTime.now().millisecondsSinceEpoch}'
+      },
+    );
+
+    // Check if the response contains an error
+    if (response.data != null &&
+        response.data is Map &&
+        response.data['error'] == true) {
+      String errorMessage = response.data['message'] ?? 'Login failed';
+      showToast(msg: errorMessage, state: MsgState.error);
+      emit(AuthError(errorMessage));
+      return;
+    }
+
+    if (response.statusCode == 200) {
+      try {
+        if (response.data != null &&
+            response.data is Map &&
+            response.data['token'] != null) {
+          final tokenValue = response.data['token']?.toString();
+          await CacheHelper.saveData(key: 'token', value: tokenValue);
         }
-      } else {
-        emit(AuthError(response.data.toString()));
+        await getUserData();
+        await Future.wait([
+          TasksCubit.get(context).getTasksFromApi(),
+          BlogsCubit.get(context).getBlogs(),
+          LayoutCubit.get(context).getHomeBanner(),
+          LayoutCubit.get(context).getAwards(),
+          LayoutCubit.get(context).getMaterial(),
+          EventsCubit.get(context).fetchEvents(),
+          ShopCubit.get(context).getAllCollections(),
+          ShopCubit.get(context).getAllProducts(),
+          CommitteeCubit.get(context).getCommitteeData(),
+        ]);
+        emit(AuthSuccess());
+        navigateAndFinish(context: context, widget: const HomeLayoutScreen());
+        showToast(msg: 'Login done Successfully', state: MsgState.success);
+      } catch (e) {
+        emit(AuthError("Error parsing response data"));
       }
-    } catch (e) {
-      showToast(
-          msg: 'Login Failed: Email or password is incorrect',
-          state: MsgState.error);
-      emit(AuthError(e.toString()));
+    } else {
+      String errorMessage = 'Login Failed: Email or password is incorrect';
+      if (response.data != null &&
+          response.data is Map &&
+          response.data['message'] != null) {
+        errorMessage = response.data['message'];
+      }
+      showToast(msg: errorMessage, state: MsgState.error);
+      emit(AuthError(errorMessage));
     }
   }
 
@@ -108,92 +119,138 @@ class AuthCubit extends Cubit<AuthState> {
       // Continue with login even if we can't get FCM token
     }
 
-    try {
-      final response =
-          await DioHelper.postData(url: UrlConstants.register, data: {
-        'name': name,
-        'email': email,
-        'password': password,
-        "fcm_token": fcmToken ?? 'no token ${DateTime.now().toString()}'
-      });
-      await CacheHelper.saveData(key: 'token', value: response.data['token']);
+    final response =
+        await DioHelper.postData(url: UrlConstants.register, data: {
+      'name': name,
+      'email': email,
+      'password': password,
+      "fcm_token": fcmToken ?? 'no token ${DateTime.now().toString()}'
+    });
 
-      await getUserData();
-      await Future.wait([
-        BlogsCubit.get(context).getBlogs(),
-        TasksCubit.get(context).getTasksFromApi(),
-        LayoutCubit.get(context).getHomeBanner(),
-        LayoutCubit.get(context).getAwards(),
-        LayoutCubit.get(context).getMaterial(),
-        ShopCubit.get(context).getAllCollections(),
-        ShopCubit.get(context).getAllProducts(),
-        EventsCubit.get(context).fetchEvents(),
-        CommitteeCubit.get(context).getCommitteeData(),
-      ]);
-      navigateAndFinish(
-        context: context,
-        widget: const HomeLayoutScreen(),
-      );
-      showToast(msg: 'Register done Successfully', state: MsgState.success);
-      emit(RegisterSuccess());
-    } catch (e) {
-      showToast(
-          msg: 'Register Failed: Email or password is incorrect',
-          state: MsgState.error);
-      emit(RegisterError('Register Failed'));
+    // Check if the response contains an error
+    if (response.data != null &&
+        response.data is Map &&
+        response.data['error'] == true) {
+      String errorMessage = response.data['message'] ?? 'Register failed';
+      showToast(msg: errorMessage, state: MsgState.error);
+      emit(RegisterError(errorMessage));
+      return;
+    }
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      try {
+        if (response.data != null &&
+            response.data is Map &&
+            response.data['token'] != null) {
+          final tokenValue = response.data['token']?.toString();
+          await CacheHelper.saveData(key: 'token', value: tokenValue);
+        }
+
+        await getUserData();
+        await Future.wait([
+          BlogsCubit.get(context).getBlogs(),
+          TasksCubit.get(context).getTasksFromApi(),
+          LayoutCubit.get(context).getHomeBanner(),
+          LayoutCubit.get(context).getAwards(),
+          LayoutCubit.get(context).getMaterial(),
+          ShopCubit.get(context).getAllCollections(),
+          ShopCubit.get(context).getAllProducts(),
+          EventsCubit.get(context).fetchEvents(),
+          CommitteeCubit.get(context).getCommitteeData(),
+        ]);
+        navigateAndFinish(
+          context: context,
+          widget: const HomeLayoutScreen(),
+        );
+        showToast(msg: 'Register done Successfully', state: MsgState.success);
+        emit(RegisterSuccess());
+      } catch (e) {
+        emit(RegisterError("Error parsing response data"));
+      }
+    } else {
+      String errorMessage = 'Register Failed: Email or password is incorrect';
+      if (response.data != null &&
+          response.data is Map &&
+          response.data['message'] != null) {
+        errorMessage = response.data['message'];
+      }
+      showToast(msg: errorMessage, state: MsgState.error);
+      emit(RegisterError(errorMessage));
     }
   }
 
   Future<void> getUserData() async {
     token = await CacheHelper.getData(key: 'token');
     emit(AuthLoading1());
-    try {
-      final response = await DioHelper.getData(
-        url: UrlConstants.getUserDetails,
-        token: token,
-        query: {},
-      );
 
-      if (response.statusCode == 200) {
-        userModel = UserModel.fromJson(response.data);
-        emit(GetUserDataSuccess());
-      } else {
-        emit(GetUserDataError(response.data.toString()));
+    final response = await DioHelper.getData(
+      url: UrlConstants.getUserDetails,
+      token: token,
+      query: {},
+    );
+
+    // Check if the response contains an error
+    if (response.data != null &&
+        response.data is Map &&
+        response.data['error'] == true) {
+      String errorMessage =
+          response.data['message'] ?? 'Failed to get user data';
+      emit(GetUserDataError(errorMessage));
+      return;
+    }
+
+    if (response.statusCode == 200) {
+      userModel = UserModel.fromJson(response.data);
+      emit(GetUserDataSuccess());
+    } else {
+      String errorMessage = 'Failed to get user data';
+      if (response.data != null &&
+          response.data is Map &&
+          response.data['message'] != null) {
+        errorMessage = response.data['message'];
       }
-    } catch (e) {
-      // print(token);
-      //print(e.toString());
-      emit(GetUserDataError(e.toString()));
+      emit(GetUserDataError(errorMessage));
     }
   }
 
   Future<void> logout(BuildContext context) async {
     token = await CacheHelper.getData(key: 'token');
     emit(AuthLogoutLoading());
-    try {
-      final response = await DioHelper.getData(
-        url: UrlConstants.logout,
-        token: token,
-        query: {},
+
+    final response = await DioHelper.getData(
+      url: UrlConstants.logout,
+      token: token,
+      query: {},
+    );
+
+    // Check if the response contains an error
+    if (response.data != null &&
+        response.data is Map &&
+        response.data['error'] == true) {
+      String errorMessage = response.data['message'] ?? 'Logout failed';
+      emit(AuthLogoutError(errorMessage));
+      return;
+    }
+
+    if (response.statusCode == 200) {
+      navigateAndFinish(context: context, widget: const LoginScreen());
+      showToast(msg: 'Logout done Successfully', state: MsgState.success);
+      await CacheHelper.removeData(key: 'token');
+      emit(AuthLogoutSuccess());
+      Future.delayed(
+        const Duration(seconds: 1),
+        () {
+          userModel = null;
+        },
       );
-      //print(response.data);
-      if (response.statusCode == 200) {
-        navigateAndFinish(context: context, widget: const LoginScreen());
-        showToast(msg: 'Logout done Successfully', state: MsgState.success);
-        await CacheHelper.removeData(key: 'token');
-        emit(AuthLogoutSuccess());
-        Future.delayed(
-          const Duration(seconds: 1),
-          () {
-            userModel = null;
-          },
-        );
-      } else {
-        emit(AuthLogoutError(response.data.toString()));
+    } else {
+      String errorMessage = 'Logout failed';
+      if (response.data != null &&
+          response.data is Map &&
+          response.data['message'] != null) {
+        errorMessage = response.data['message'];
       }
-    } catch (e) {
-      //8log(e.toString());
-      emit(AuthLogoutError(e.toString()));
+      emit(AuthLogoutError(errorMessage));
     }
   }
 
@@ -204,38 +261,52 @@ class AuthCubit extends Cubit<AuthState> {
   }) async {
     emit(UpdateProfileImageLoading());
     token = await CacheHelper.getData(key: 'token');
-    try {
-      // Create form data for file upload
-      String fileName = imageFile.path.split('/').last;
-      FormData formData = FormData.fromMap({
-        'image': await MultipartFile.fromFile(
-          imageFile.path,
-          filename: fileName,
-        ),
-        "bio": userModel?.bio,
-        "phone": userModel?.phone,
-        "linkedin": userModel?.linkedInLink,
-      });
-      Map<String, dynamic> headers = {
-        'Content-Type': 'multipart/form-data',
-        'Accept': 'application/json',
-        'Authorization': 'Bearer $token',
-      };
 
-      // Make API call to update profile image
-      final response = await DioHelper.postData(
-          url: UrlConstants.updateUser,
-          data: formData,
-          token: token!,
-          headers: headers);
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        await getUserData();
-        emit(UpdateProfileImageSuccess());
-      } else {
-        emit(UpdateProfileImageError('Failed to update profile image'));
+    // Create form data for file upload
+    String fileName = imageFile.path.split('/').last;
+    FormData formData = FormData.fromMap({
+      'image': await MultipartFile.fromFile(
+        imageFile.path,
+        filename: fileName,
+      ),
+      "bio": userModel?.bio,
+      "phone": userModel?.phone,
+      "linkedin": userModel?.linkedInLink,
+    });
+    Map<String, dynamic> headers = {
+      'Content-Type': 'multipart/form-data',
+      'Accept': 'application/json',
+      'Authorization': 'Bearer $token',
+    };
+
+    // Make API call to update profile image
+    final response = await DioHelper.postData(
+        url: UrlConstants.updateUser,
+        data: formData,
+        token: token!,
+        headers: headers);
+
+    // Check if the response contains an error
+    if (response.data != null &&
+        response.data is Map &&
+        response.data['error'] == true) {
+      String errorMessage =
+          response.data['message'] ?? 'Failed to update profile image';
+      emit(UpdateProfileImageError(errorMessage));
+      return;
+    }
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      await getUserData();
+      emit(UpdateProfileImageSuccess());
+    } else {
+      String errorMessage = 'Failed to update profile image';
+      if (response.data != null &&
+          response.data is Map &&
+          response.data['message'] != null) {
+        errorMessage = response.data['message'];
       }
-    } catch (e) {
-      emit(UpdateProfileImageError(e.toString()));
+      emit(UpdateProfileImageError(errorMessage));
     }
   }
 
@@ -248,30 +319,42 @@ class AuthCubit extends Cubit<AuthState> {
   }) async {
     emit(UpdateUserDataLoading());
 
-    try {
-      // Prepare data for the API call
-      Map<String, dynamic> data = {
-        "bio": bio,
-        "phone": phone,
-        "linkedin": linkedInLink,
-      };
+    // Prepare data for the API call
+    Map<String, dynamic> data = {
+      "bio": bio,
+      "phone": phone,
+      "linkedin": linkedInLink,
+    };
 
-      // Make API call to update user data
-      final response = await DioHelper.postData(
-        url: UrlConstants.updateUser,
-        data: data,
-        token: token!,
-      );
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        await getUserData();
-        emit(UpdateUserDataSuccess());
-        showToast(
-            msg: 'User data updated successfully', state: MsgState.success);
-      } else {
-        emit(UpdateUserDataError('Failed to update user data'));
+    // Make API call to update user data
+    final response = await DioHelper.postData(
+      url: UrlConstants.updateUser,
+      data: data,
+      token: token!,
+    );
+
+    // Check if the response contains an error
+    if (response.data != null &&
+        response.data is Map &&
+        response.data['error'] == true) {
+      String errorMessage =
+          response.data['message'] ?? 'Failed to update user data';
+      emit(UpdateUserDataError(errorMessage));
+      return;
+    }
+
+    if (response.statusCode == 200 || response.statusCode == 201) {
+      await getUserData();
+      emit(UpdateUserDataSuccess());
+      showToast(msg: 'User data updated successfully', state: MsgState.success);
+    } else {
+      String errorMessage = 'Failed to update user data';
+      if (response.data != null &&
+          response.data is Map &&
+          response.data['message'] != null) {
+        errorMessage = response.data['message'];
       }
-    } catch (e) {
-      emit(UpdateUserDataError(e.toString()));
+      emit(UpdateUserDataError(errorMessage));
     }
   }
 
@@ -337,6 +420,17 @@ class AuthCubit extends Cubit<AuthState> {
         },
       );
 
+      // Check if the response contains an error
+      if (response.data != null &&
+          response.data is Map &&
+          response.data['error'] == true) {
+        String errorMessage =
+            response.data['message'] ?? 'Google Sign In failed';
+        showToast(msg: errorMessage, state: MsgState.error);
+        emit(AuthGoogleError(errorMessage));
+        return;
+      }
+
       if (response.statusCode == 200) {
         try {
           if (response.data != null &&
@@ -381,6 +475,7 @@ class AuthCubit extends Cubit<AuthState> {
             response.data['message'] != null) {
           errorMessage = response.data['message'].toString();
         }
+        showToast(msg: errorMessage, state: MsgState.error);
         emit(AuthGoogleError(errorMessage));
       }
     } on TimeoutException {

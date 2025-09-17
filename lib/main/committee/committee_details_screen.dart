@@ -130,7 +130,7 @@ class _CommitteeDetailsScreenState extends State<CommitteeDetailsScreen>
                     child: Container(
                       margin: EdgeInsets.only(left: 16.w),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.black.withOpacity(0.6),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -148,7 +148,7 @@ class _CommitteeDetailsScreenState extends State<CommitteeDetailsScreen>
                         margin: EdgeInsets.only(right: 16.w),
                         padding: EdgeInsets.all(8.r),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
+                          color: Colors.black.withOpacity(0.6),
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
@@ -347,18 +347,18 @@ class _CommitteeDetailsScreenState extends State<CommitteeDetailsScreen>
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             // Committee ID stat
-            _buildStatItem(
-              'ID',
-              '${widget.committee.id ?? "N/A"}',
-              Icons.tag,
-              Colors.blue.withOpacity(0.8),
-            ),
+            // _buildStatItem(
+            //   'ID',
+            //   '${widget.committee.id ?? "N/A"}',
+            //   Icons.tag,
+            //   Colors.blue.withOpacity(0.8),
+            // ),
 
-            VerticalDivider(
-              color: Colors.white.withOpacity(0.2),
-              thickness: 1.r,
-              width: 32.w,
-            ),
+            // VerticalDivider(
+            //   color: Colors.white.withOpacity(0.2),
+            //   thickness: 1.r,
+            //   width: 32.w,
+            // ),
 
             // Admin count stat
             _buildStatItem(
@@ -635,6 +635,14 @@ class _CommitteeDetailsScreenState extends State<CommitteeDetailsScreen>
 
   // Build admin card
   Widget _buildAdminCard(Admins admin) {
+    String? name = admin.name;
+    if (name == 'superadmin' || name == 'admin') {
+      name = 'AIChE SUSC';
+    }
+    String? title = admin.title;
+    if (title == 'admim') {
+      title = 'admin';
+    }
     return Container(
       margin: EdgeInsets.only(bottom: 16.r),
       decoration: BoxDecoration(
@@ -663,10 +671,12 @@ class _CommitteeDetailsScreenState extends State<CommitteeDetailsScreen>
         children: [
           // Admin header with image, name and title
           ListTile(
-            onTap: (){
-              navigateTo(context: context, widget: ProfileDetailScreen(
-                userModel: admin,
-              ));
+            onTap: () {
+              navigateTo(
+                  context: context,
+                  widget: ProfileDetailScreen(
+                    userModel: admin,
+                  ));
             },
             contentPadding: EdgeInsets.all(16.r),
             leading: _buildAdminAvatar(admin),
@@ -675,7 +685,7 @@ class _CommitteeDetailsScreenState extends State<CommitteeDetailsScreen>
               highlightColor: Colors.white.withOpacity(0.7),
               period: const Duration(seconds: 3),
               child: Text(
-                admin.name ?? 'Unknown',
+                name ?? 'Unknown',
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -686,7 +696,7 @@ class _CommitteeDetailsScreenState extends State<CommitteeDetailsScreen>
             subtitle: Padding(
               padding: EdgeInsets.only(top: 4.r),
               child: Text(
-                admin.title ?? 'Member',
+                title ?? 'Member',
                 style: TextStyle(
                   color: Colors.white.withOpacity(0.7),
                   fontSize: 14.sp,
@@ -838,12 +848,12 @@ class _CommitteeDetailsScreenState extends State<CommitteeDetailsScreen>
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: Colors.white.withOpacity(0.3),
+          color: Colors.white,
           width: 2.r,
         ),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
+            color: Colors.white,
             blurRadius: 5,
             spreadRadius: 1,
           ),
@@ -851,10 +861,12 @@ class _CommitteeDetailsScreenState extends State<CommitteeDetailsScreen>
       ),
       child: CircleAvatar(
         radius: 30.r,
-        backgroundColor: Colors.blue.withOpacity(0.2),
+        backgroundColor: Colors.white,
         backgroundImage:
             admin.profile?.image != null && admin.profile!.image!.isNotEmpty
-                ? CachedNetworkImageProvider(admin.profile!.image!)
+                ? CachedNetworkImageProvider(
+                    admin.profile!.image!,
+                  )
                 : const AssetImage('assets/images/person.png') as ImageProvider,
       ),
     );
@@ -915,7 +927,7 @@ class _CommitteeDetailsScreenState extends State<CommitteeDetailsScreen>
                   );
                 }
               },
-              builder: (context) =>  ElevatedButton(
+              builder: (context) => ElevatedButton(
                 onPressed: () {
                   LayoutCubit.get(context).requestJoinCommittee(
                     committeeId: widget.committee.id!,

@@ -17,21 +17,41 @@ class ShopCubit extends Cubit<ShopState> {
   Future<void> getAllProducts() async {
     allProducts = [];
     emit(GetAllProductsLoadingState());
-    try {
-      DioHelper.getData(
-        url: UrlConstants.getAllProducts,
-        token: token,
-        query: {},
-      ).then((value) {
-        for (var element in value.data['data']) {
+
+    final response = await DioHelper.getData(
+      url: UrlConstants.getAllProducts,
+      token: token,
+      query: {},
+    );
+
+    // Check if the response contains an error
+    if (response.data != null &&
+        response.data is Map &&
+        response.data['error'] == true) {
+      String errorMessage =
+          response.data['message'] ?? 'Failed to load products';
+      emit(GetAllProductsErrorState(errorMessage));
+      return;
+    }
+
+    if (response.statusCode == 200) {
+      for (var element in response.data['data']) {
+        if (element['name'] != 'p_test' &&
+            element['name'] != 'last test' &&
+            element['name'] != 'clt test') {
           allProducts.add(ProductModel.fromJson(element));
         }
-        emit(GetAllProductsSuccessState());
-      });
-      // Mock data
+      }
+
       emit(GetAllProductsSuccessState());
-    } catch (error) {
-      emit(GetAllProductsErrorState(error.toString()));
+    } else {
+      String errorMessage = 'Failed to load products';
+      if (response.data != null &&
+          response.data is Map &&
+          response.data['message'] != null) {
+        errorMessage = response.data['message'];
+      }
+      emit(GetAllProductsErrorState(errorMessage));
     }
   }
 
@@ -40,21 +60,36 @@ class ShopCubit extends Cubit<ShopState> {
   Future<void> getAllCollections() async {
     allCollections = [];
     emit(GetAllCollectionsLoadingState());
-    try {
-      DioHelper.getData(
-        url: UrlConstants.getAllCollections,
-        token: token,
-        query: {},
-      ).then((value) {
-        for (var element in value.data['data']) {
-          allCollections.add(CollectionModel.fromJson(element));
-        }
-        emit(GetAllCollectionsSuccessState());
-      });
-      // Mock data
+
+    final response = await DioHelper.getData(
+      url: UrlConstants.getAllCollections,
+      token: token,
+      query: {},
+    );
+
+    // Check if the response contains an error
+    if (response.data != null &&
+        response.data is Map &&
+        response.data['error'] == true) {
+      String errorMessage =
+          response.data['message'] ?? 'Failed to load collections';
+      emit(GetAllCollectionsErrorState(errorMessage));
+      return;
+    }
+
+    if (response.statusCode == 200) {
+      for (var element in response.data['data']) {
+        allCollections.add(CollectionModel.fromJson(element));
+      }
       emit(GetAllCollectionsSuccessState());
-    } catch (error) {
-      emit(GetAllCollectionsErrorState(error.toString()));
+    } else {
+      String errorMessage = 'Failed to load collections';
+      if (response.data != null &&
+          response.data is Map &&
+          response.data['message'] != null) {
+        errorMessage = response.data['message'];
+      }
+      emit(GetAllCollectionsErrorState(errorMessage));
     }
   }
 
@@ -64,23 +99,38 @@ class ShopCubit extends Cubit<ShopState> {
     required String phone,
   }) async {
     emit(PlaceOrderLoadingState());
-    try {
-      DioHelper.postData(
-        url: UrlConstants.placeProductOrder,
-        token: token,
-        data: {
-          'phone': phone,
-          'product_id': productId,
-        },
-      ).then((value) {
-        showToast(
-            msg: 'Product order created successfully', state: MsgState.success);
-        emit(PlaceOrderSuccessState());
-      });
-      // Mock data
+
+    final response = await DioHelper.postData(
+      url: UrlConstants.placeProductOrder,
+      token: token,
+      data: {
+        'phone': phone,
+        'product_id': productId,
+      },
+    );
+
+    // Check if the response contains an error
+    if (response.data != null &&
+        response.data is Map &&
+        response.data['error'] == true) {
+      String errorMessage =
+          response.data['message'] ?? 'Failed to place product order';
+      emit(PlaceOrderErrorState(errorMessage));
+      return;
+    }
+
+    if (response.statusCode == 200) {
+      showToast(
+          msg: 'Product order created successfully', state: MsgState.success);
       emit(PlaceOrderSuccessState());
-    } catch (error) {
-      emit(PlaceOrderErrorState(error.toString()));
+    } else {
+      String errorMessage = 'Failed to place product order';
+      if (response.data != null &&
+          response.data is Map &&
+          response.data['message'] != null) {
+        errorMessage = response.data['message'];
+      }
+      emit(PlaceOrderErrorState(errorMessage));
     }
   }
 
@@ -89,23 +139,39 @@ class ShopCubit extends Cubit<ShopState> {
     required String phone,
   }) async {
     emit(PlaceOrderLoadingState());
-    try {
-      DioHelper.postData(
-        url: UrlConstants.placeCollectionOrder,
-        token: token,
-        data: {
-          'phone': phone,
-          'collection_id': collectionId,
-        },
-      ).then((value) {
-        showToast(
-            msg: 'Product order created successfully', state: MsgState.success);
-        emit(PlaceOrderSuccessState());
-      });
-      // Mock data
+
+    final response = await DioHelper.postData(
+      url: UrlConstants.placeCollectionOrder,
+      token: token,
+      data: {
+        'phone': phone,
+        'collection_id': collectionId,
+      },
+    );
+
+    // Check if the response contains an error
+    if (response.data != null &&
+        response.data is Map &&
+        response.data['error'] == true) {
+      String errorMessage =
+          response.data['message'] ?? 'Failed to place collection order';
+      emit(PlaceOrderErrorState(errorMessage));
+      return;
+    }
+
+    if (response.statusCode == 200) {
+      showToast(
+          msg: 'Collection order created successfully',
+          state: MsgState.success);
       emit(PlaceOrderSuccessState());
-    } catch (error) {
-      emit(PlaceOrderErrorState(error.toString()));
+    } else {
+      String errorMessage = 'Failed to place collection order';
+      if (response.data != null &&
+          response.data is Map &&
+          response.data['message'] != null) {
+        errorMessage = response.data['message'];
+      }
+      emit(PlaceOrderErrorState(errorMessage));
     }
   }
 }

@@ -14,17 +14,17 @@ class EventModel {
 
   EventModel(
       {this.success,
-        this.id,
-        this.title,
-        this.description,
-        this.startDate,
-        this.endDate,
-        this.place,
-        this.formLink,
-        this.facebookLink,
-        this.category,
-        this.status,
-        this.image});
+      this.id,
+      this.title,
+      this.description,
+      this.startDate,
+      this.endDate,
+      this.place,
+      this.formLink,
+      this.facebookLink,
+      this.category,
+      this.status,
+      this.image});
 
   EventModel.fromJson(Map<String, dynamic> json) {
     success = json['success'];
@@ -38,9 +38,10 @@ class EventModel {
     facebookLink = json['facebookLink'];
     category = json['category'];
     status = json['status'];
-    if (json['image'] != null) {
+    // Fix: API returns 'images' (plural) not 'image' (singular)
+    if (json['images'] != null) {
       image = <Image>[];
-      json['image'].forEach((v) {
+      json['images'].forEach((v) {
         image!.add(Image.fromJson(v));
       });
     }

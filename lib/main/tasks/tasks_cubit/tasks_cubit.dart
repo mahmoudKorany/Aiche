@@ -538,22 +538,33 @@ class TasksCubit extends Cubit<TasksState> {
   Future<void> getTasksFromApi() async {
     tasks = [];
     emit(GetAllTasksFromApiLoading());
-    try {
-      DioHelper.getData(url: UrlConstants.getTasks, query: {}, token: token)
-          .then((value) {
-        if (value.statusCode == 200) {
-          for (var element in value.data['data']) {
-            tasks.add(TasksModel.fromJson(element));
-          }
-          emit(GetAllTasksFromApiLoaded());
-        } else {
-          emit(GetAllTasksFromApiError('Failed to load tasks from API'));
-        }
-      }).catchError((error) {
-        emit(GetAllTasksFromApiError('Failed to load tasks from API: $error'));
-      });
-    } catch (e) {
-      emit(GetAllTasksFromApiError('Failed to load tasks from API: $e'));
+
+    final response = await DioHelper.getData(
+        url: UrlConstants.getTasks, query: {}, token: token);
+
+    // Check if the response contains an error
+    if (response.data != null &&
+        response.data is Map &&
+        response.data['error'] == true) {
+      String errorMessage =
+          response.data['message'] ?? 'Failed to load tasks from API';
+      emit(GetAllTasksFromApiError(errorMessage));
+      return;
+    }
+
+    if (response.statusCode == 200) {
+      for (var element in response.data['data']) {
+        tasks.add(TasksModel.fromJson(element));
+      }
+      emit(GetAllTasksFromApiLoaded());
+    } else {
+      String errorMessage = 'Failed to load tasks from API';
+      if (response.data != null &&
+          response.data is Map &&
+          response.data['message'] != null) {
+        errorMessage = response.data['message'];
+      }
+      emit(GetAllTasksFromApiError(errorMessage));
     }
   }
 }

@@ -63,7 +63,7 @@ class DioHelper {
                   headers: {'Content-Type': 'application/json'}));
       return response;
     } on DioException catch (e) {
-      throw _handleDioError(e);
+      return _createErrorResponse(e);
     }
   }
 
@@ -91,7 +91,7 @@ class DioHelper {
             : null,
       );
     } on DioException catch (e) {
-      throw _handleDioError(e);
+      return _createErrorResponse(e);
     }
   }
 
@@ -109,7 +109,7 @@ class DioHelper {
         ),
       );
     } on DioException catch (e) {
-      throw _handleDioError(e);
+      return _createErrorResponse(e);
     }
   }
 
@@ -133,7 +133,7 @@ class DioHelper {
         data: data,
       );
     } on DioException catch (e) {
-      throw _handleDioError(e);
+      return _createErrorResponse(e);
     }
   }
 
@@ -154,8 +154,30 @@ class DioHelper {
     }
   }
 
-  /// Handle Dio errors and provide meaningful error messages
-  static String _handleDioError(DioException e) {
+  /// Create a Response object with error information instead of throwing
+  static Response _createErrorResponse(DioException e) {
+    String errorMessage = _getErrorMessage(e);
+    int statusCode = e.response?.statusCode ?? 0;
+
+    // Log the error for debugging
+    if (kDebugMode) {
+      print('DioError: $errorMessage');
+      print('DioError Details: ${e.toString()}');
+    }
+
+    return Response(
+      data: {
+        'error': true,
+        'message': errorMessage,
+        'statusCode': statusCode,
+      },
+      statusCode: statusCode,
+      requestOptions: e.requestOptions,
+    );
+  }
+
+  /// Get error message from DioException
+  static String _getErrorMessage(DioException e) {
     String errorMessage = 'An unexpected error occurred';
 
     switch (e.type) {
@@ -213,14 +235,6 @@ class DioHelper {
           errorMessage = 'Network error: ${e.message ?? 'Unknown error'}';
         }
         break;
-    }
-
-    // Log the error for debugging
-    if (kDebugMode) {
-      print('DioError: $errorMessage');
-    }
-    if (kDebugMode) {
-      print('DioError Details: ${e.toString()}');
     }
 
     return errorMessage;

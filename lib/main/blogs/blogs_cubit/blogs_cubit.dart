@@ -18,22 +18,36 @@ class BlogsCubit extends Cubit<BlogsState> {
   Future<void> getBlogs() async {
     token = await CacheHelper.getData(key: 'token');
     emit(BlogsLoading());
-    await DioHelper.getData(
-      token: token??'',
+
+    final response = await DioHelper.getData(
+      token: token ?? '',
       query: {},
       url: UrlConstants.getBlogs,
-    ).then((value) {
-      if (value.statusCode == 200) {
-        blogs = [];
-        for (var element in value.data['data']) {
-          blogs.add(BlogModel.fromJson(element));
-        }
-        emit(BlogsSuccess());
-      } else {
-        emit(BlogsError(value.data.toString()));
+    );
+
+    // Check if the response contains an error
+    if (response.data != null &&
+        response.data is Map &&
+        response.data['error'] == true) {
+      String errorMessage = response.data['message'] ?? 'Failed to load blogs';
+      emit(BlogsError(errorMessage));
+      return;
+    }
+
+    if (response.statusCode == 200) {
+      blogs = [];
+      for (var element in response.data['data']) {
+        blogs.add(BlogModel.fromJson(element));
       }
-    }).catchError((error) {
-      emit(BlogsError(error.toString()));
-    });
+      emit(BlogsSuccess());
+    } else {
+      String errorMessage = 'Failed to load blogs';
+      if (response.data != null &&
+          response.data is Map &&
+          response.data['message'] != null) {
+        errorMessage = response.data['message'];
+      }
+      emit(BlogsError(errorMessage));
+    }
   }
 }

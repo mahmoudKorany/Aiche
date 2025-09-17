@@ -39,20 +39,8 @@ class EventDetailsScreen extends StatelessWidget {
                   background: Stack(
                     fit: StackFit.expand,
                     children: [
-                      // Display the first image as the header
-                      CachedNetworkImage(
-                        imageUrl: eventModel.image?.isNotEmpty == true
-                            ? eventModel.image![0].imagePath ?? ""
-                            : "",
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Center(
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.w,
-                          ),
-                        ),
-                        errorWidget: (context, url, error) =>
-                            Icon(Icons.error, size: 24.sp),
-                      ),
+                      // Display the first image as the header with better null checking
+                      _buildHeaderImage(),
                       Container(
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
@@ -107,14 +95,16 @@ class EventDetailsScreen extends StatelessWidget {
                         ),
                       SizedBox(height: 16.h),
 
-                      // Event Images Gallery
+                      // Event Images Gallery - Show for all events with images
                       if (eventModel.image != null &&
-                          eventModel.image!.length > 1)
+                          eventModel.image!.isNotEmpty)
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Event Gallery',
+                              eventModel.image!.length > 1
+                                  ? 'Event Gallery'
+                                  : 'Event Image',
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 24.sp,
@@ -129,6 +119,14 @@ class EventDetailsScreen extends StatelessWidget {
                                 scrollDirection: Axis.horizontal,
                                 itemCount: eventModel.image!.length,
                                 itemBuilder: (context, index) {
+                                  final imageUrl =
+                                      eventModel.image![index].imagePath;
+
+                                  // Skip images with null or empty URLs
+                                  if (imageUrl == null || imageUrl.isEmpty) {
+                                    return const SizedBox.shrink();
+                                  }
+
                                   return Padding(
                                     padding: EdgeInsets.only(right: 12.w),
                                     child: GestureDetector(
@@ -141,9 +139,7 @@ class EventDetailsScreen extends StatelessWidget {
                                         child: SizedBox(
                                           width: 160.w,
                                           child: CachedNetworkImage(
-                                            imageUrl: eventModel
-                                                    .image![index].imagePath ??
-                                                "",
+                                            imageUrl: imageUrl,
                                             fit: BoxFit.cover,
                                             placeholder: (context, url) =>
                                                 Container(
@@ -152,6 +148,7 @@ class EventDetailsScreen extends StatelessWidget {
                                                 child:
                                                     CircularProgressIndicator(
                                                   strokeWidth: 2.w,
+                                                  color: Colors.white,
                                                 ),
                                               ),
                                             ),
@@ -260,7 +257,8 @@ class EventDetailsScreen extends StatelessWidget {
 
                       // Register Button - only show if formLink is available
                       if (eventModel.formLink != null &&
-                          eventModel.formLink!.isNotEmpty)
+                          eventModel.formLink!.isNotEmpty &&
+                          eventModel.status != 'closed')
                         SizedBox(
                           width: double.infinity,
                           height: 56.h,
@@ -467,6 +465,59 @@ class EventDetailsScreen extends StatelessWidget {
       ),
     );
   }
+
+  // Build header image with proper null checking and fallback
+  Widget _buildHeaderImage() {
+    // Check if we have images and the first image has a valid URL
+    if (eventModel.image != null &&
+        eventModel.image!.isNotEmpty &&
+        eventModel.image![0].imagePath != null &&
+        eventModel.image![0].imagePath!.isNotEmpty) {
+      return CachedNetworkImage(
+        imageUrl: eventModel.image![0].imagePath!,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => Container(
+          color: Colors.grey[800],
+          child: Center(
+            child: CircularProgressIndicator(
+              strokeWidth: 2.w,
+              color: Colors.white,
+            ),
+          ),
+        ),
+        errorWidget: (context, url, error) => _buildFallbackHeader(),
+      );
+    } else {
+      return _buildFallbackHeader();
+    }
+  }
+
+  // Fallback header when no image is available
+  Widget _buildFallbackHeader() {
+    return Container(
+      color: const Color(0xFF111347),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.event,
+              color: Colors.white.withOpacity(0.7),
+              size: 48.sp,
+            ),
+            SizedBox(height: 8.h),
+            Text(
+              'Event Image',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.7),
+                fontSize: 14.sp,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class PhotoGalleryViewer extends StatefulWidget {
@@ -502,6 +553,45 @@ class _PhotoGalleryViewerState extends State<PhotoGalleryViewer> {
 
   @override
   Widget build(BuildContext context) {
+    // Filter out images with null or empty URLs
+    final validImages = widget.images
+        .where(
+            (image) => image.imagePath != null && image.imagePath!.isNotEmpty)
+        .toList();
+
+    if (validImages.isEmpty) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        appBar: AppBar(
+          backgroundColor: Colors.black,
+          leading: IconButton(
+            icon: Icon(Icons.close, color: Colors.white, size: 24.sp),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.image_not_supported,
+                color: Colors.white.withOpacity(0.7),
+                size: 64.sp,
+              ),
+              SizedBox(height: 16.h),
+              Text(
+                'No images available',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.7),
+                  fontSize: 16.sp,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
@@ -511,7 +601,7 @@ class _PhotoGalleryViewerState extends State<PhotoGalleryViewer> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(
-          '${_currentIndex + 1}/${widget.images.length}',
+          '${_currentIndex + 1}/${validImages.length}',
           style: TextStyle(color: Colors.white, fontSize: 16.sp),
         ),
         centerTitle: true,
@@ -522,7 +612,7 @@ class _PhotoGalleryViewerState extends State<PhotoGalleryViewer> {
         },
         child: PageView.builder(
           controller: _pageController,
-          itemCount: widget.images.length,
+          itemCount: validImages.length,
           onPageChanged: (index) {
             setState(() {
               _currentIndex = index;
@@ -534,17 +624,30 @@ class _PhotoGalleryViewerState extends State<PhotoGalleryViewer> {
               maxScale: 3.0,
               child: Center(
                 child: CachedNetworkImage(
-                  imageUrl: widget.images[index].imagePath ?? "",
+                  imageUrl: validImages[index].imagePath!,
                   placeholder: (context, url) => Center(
                     child: CircularProgressIndicator(
                       color: Colors.white,
                       strokeWidth: 2.w,
                     ),
                   ),
-                  errorWidget: (context, url, error) => Icon(
-                    Icons.error,
-                    color: Colors.white,
-                    size: 50.sp,
+                  errorWidget: (context, url, error) => Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.error_outline,
+                        color: Colors.white,
+                        size: 50.sp,
+                      ),
+                      SizedBox(height: 16.h),
+                      Text(
+                        'Failed to load image',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14.sp,
+                        ),
+                      ),
+                    ],
                   ),
                   fit: BoxFit.contain,
                 ),

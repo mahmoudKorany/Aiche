@@ -16,11 +16,14 @@ class SessionsScreen extends StatefulWidget {
 }
 
 class _SessionsScreenState extends State<SessionsScreen> {
+  bool _isMembershipInactive =
+      true; // Set to true to show inactive state by default
+
   @override
   void initState() {
     super.initState();
-    // Refresh sessions data when screen is opened
-    LayoutCubit.get(context).getUserSessions();
+    // Don't load sessions automatically - just show inactive state
+    // LayoutCubit.get(context).getUserSessions();
   }
 
   @override
@@ -30,19 +33,23 @@ class _SessionsScreenState extends State<SessionsScreen> {
         children: [
           // Background gradient
           const BackGround(),
-          
+
           // Main content
           Padding(
             padding: EdgeInsets.all(16.0.r),
             child: RefreshIndicator(
               onRefresh: () async {
-                await LayoutCubit.get(context).getUserSessions();
+                // Keep showing inactive state even on refresh
+                // setState(() {
+                //   _isMembershipInactive = false;
+                // });
+                // await LayoutCubit.get(context).getUserSessions();
               },
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(height: 50.h),
-                  
+
                   // Header with drawer icon
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -64,7 +71,17 @@ class _SessionsScreenState extends State<SessionsScreen> {
                           SizedBox(height: 4.h),
                           BlocBuilder<LayoutCubit, LayoutState>(
                             builder: (context, state) {
-                              final sessions = LayoutCubit.get(context).userSessions;
+                              final sessions =
+                                  LayoutCubit.get(context).userSessions;
+                              if (_isMembershipInactive) {
+                                return Text(
+                                  'Access restricted',
+                                  style: TextStyle(
+                                    fontSize: 12.0.sp,
+                                    color: Colors.orange.withOpacity(0.8),
+                                  ),
+                                );
+                              }
                               return Text(
                                 '${sessions.length} sessions available',
                                 style: TextStyle(
@@ -76,35 +93,60 @@ class _SessionsScreenState extends State<SessionsScreen> {
                           ),
                         ],
                       ),
+                      // Removed test button
                     ],
                   ),
-                  
+
                   SizedBox(height: 16.h),
-                  
+
                   // Sessions list
                   Expanded(
                     child: BlocConsumer<LayoutCubit, LayoutState>(
                       listener: (context, state) {
                         if (state is LayoutGetUserSessionsError) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Could not load sessions'),
-                              backgroundColor: Colors.red,
-                            ),
-                          );
+                          // Check if the error is related to inactive membership
+                          if (state.error
+                                  .toLowerCase()
+                                  .contains('membership') &&
+                              state.error.toLowerCase().contains('inactive')) {
+                            setState(() {
+                              _isMembershipInactive = true;
+                            });
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                    'Could not load sessions: ${state.error}'),
+                                backgroundColor: Colors.red,
+                                duration: const Duration(seconds: 4),
+                                action: SnackBarAction(
+                                  label: 'Retry',
+                                  textColor: Colors.white,
+                                  onPressed: () {
+                                    LayoutCubit.get(context).getUserSessions();
+                                  },
+                                ),
+                              ),
+                            );
+                          }
                         }
                       },
                       builder: (context, state) {
                         final sessions = LayoutCubit.get(context).userSessions;
-                        
+
                         if (state is LayoutGetUserSessionsLoading) {
                           return _buildLoadingShimmer();
                         }
-                        
+
+                        // Show membership inactive state by default
+                        if (_isMembershipInactive) {
+                          return _buildMembershipInactiveState();
+                        }
+
                         if (sessions.isEmpty) {
                           return _buildEmptyState();
                         }
-                        
+
                         return ListView.builder(
                           physics: const AlwaysScrollableScrollPhysics(
                             parent: BouncingScrollPhysics(),
@@ -114,7 +156,8 @@ class _SessionsScreenState extends State<SessionsScreen> {
                           itemBuilder: (context, index) {
                             final session = sessions[index];
                             return TweenAnimationBuilder(
-                              duration: Duration(milliseconds: 300 + (index * 100)),
+                              duration:
+                                  Duration(milliseconds: 300 + (index * 100)),
                               tween: Tween<double>(begin: 0, end: 1),
                               builder: (context, double value, child) {
                                 return Transform.translate(
@@ -139,7 +182,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
       ),
     );
   }
-  
+
   Widget _buildEmptyState() {
     return Center(
       child: Column(
@@ -190,7 +233,7 @@ class _SessionsScreenState extends State<SessionsScreen> {
     return ListView.builder(
       physics: const BouncingScrollPhysics(),
       padding: EdgeInsets.zero,
-      itemCount:  5,
+      itemCount: 5,
       itemBuilder: (context, index) {
         return Shimmer.fromColors(
           baseColor: Colors.grey.shade300.withOpacity(0.3),
@@ -282,11 +325,186 @@ class _SessionsScreenState extends State<SessionsScreen> {
       },
     );
   }
+
+  Widget _buildMembershipInactiveState() {
+    return Center(
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Animated warning icon
+            TweenAnimationBuilder(
+              duration: const Duration(milliseconds: 800),
+              tween: Tween<double>(begin: 0, end: 1),
+              builder: (context, double value, child) {
+                return Transform.scale(
+                  scale: value,
+                  child: Container(
+                    width: 100.r,
+                    height: 100.r,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.orange.withOpacity(0.3),
+                          Colors.red.withOpacity(0.3),
+                        ],
+                      ),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: Colors.orange.withOpacity(0.5),
+                        width: 2.r,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.warning_amber_rounded,
+                      size: 56.r,
+                      color: Colors.orange[300],
+                    ),
+                  ),
+                );
+              },
+            ),
+            SizedBox(height: 24.h),
+            Text(
+              'Access Restricted',
+              style: TextStyle(
+                fontSize: 22.sp,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 12.h),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 32.w),
+              child: Text(
+                'Your membership in this committee is currently inactive. Please contact an administrator to restore your access to sessions.',
+                style: TextStyle(
+                  fontSize: 16.sp,
+                  color: Colors.white.withOpacity(0.7),
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ),
+            SizedBox(height: 32.h),
+
+            // Action buttons
+            Column(
+              children: [
+                SizedBox(
+                  width: 200.w,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      setState(() {
+                        _isMembershipInactive = false;
+                      });
+                      LayoutCubit.get(context).getUserSessions();
+                    },
+                    icon: Icon(
+                      Icons.refresh_rounded,
+                      size: 20.r,
+                    ),
+                    label: Text(
+                      'Try Again',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.blue.shade600,
+                      padding: EdgeInsets.symmetric(vertical: 14.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      elevation: 3,
+                    ),
+                  ),
+                ),
+                SizedBox(height: 12.h),
+                SizedBox(
+                  width: 200.w,
+                  child: OutlinedButton.icon(
+                    onPressed: () {
+                      // Navigate back or to contact page
+                      Navigator.of(context).pop();
+                    },
+                    icon: Icon(
+                      Icons.arrow_back_rounded,
+                      size: 20.r,
+                      color: Colors.white.withOpacity(0.8),
+                    ),
+                    label: Text(
+                      'Go Back',
+                      style: TextStyle(
+                        fontSize: 16.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white.withOpacity(0.8),
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      padding: EdgeInsets.symmetric(vertical: 14.h),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.r),
+                      ),
+                      side: BorderSide(
+                        color: Colors.white.withOpacity(0.3),
+                        width: 1.5.r,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 24.h),
+
+            // Additional help text
+            Container(
+              margin: EdgeInsets.symmetric(horizontal: 24.w),
+              padding: EdgeInsets.all(16.r),
+              decoration: BoxDecoration(
+                color: Colors.blue.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12.r),
+                border: Border.all(
+                  color: Colors.blue.withOpacity(0.3),
+                  width: 1.r,
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline_rounded,
+                    color: Colors.blue[300],
+                    size: 24.r,
+                  ),
+                  SizedBox(width: 12.w),
+                  Expanded(
+                    child: Text(
+                      'If you believe this is an error, please contact your committee administrator.',
+                      style: TextStyle(
+                        fontSize: 14.sp,
+                        color: Colors.white.withOpacity(0.8),
+                        height: 1.4,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class SessionCard extends StatelessWidget {
   final SessionModel session;
-  
+
   const SessionCard({
     Key? key,
     required this.session,
@@ -297,7 +515,7 @@ class SessionCard extends StatelessWidget {
     if (dateString == null || dateString.isEmpty) {
       return 'N/A';
     }
-    
+
     try {
       final date = DateTime.parse(dateString);
       return DateFormat('EEEE, MMM d, yyyy').format(date);
@@ -343,10 +561,10 @@ class SessionCard extends StatelessWidget {
         children: [
           // Session Header
           _buildSessionHeader(),
-          
+
           // Session Body with Description
           _buildSessionBody(),
-          
+
           // Session Footer with Date and Link
           if (session.date != null || session.link != null)
             _buildSessionFooter(),
@@ -354,7 +572,7 @@ class SessionCard extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildSessionHeader() {
     return Container(
       padding: EdgeInsets.all(16.r),
@@ -382,7 +600,7 @@ class SessionCard extends StatelessWidget {
             ),
           ),
           SizedBox(width: 16.w),
-          
+
           // Session title and user details
           Expanded(
             child: Column(
@@ -430,12 +648,12 @@ class SessionCard extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildSessionBody() {
     if (session.description == null || session.description!.isEmpty) {
       return SizedBox(height: 16.h);
     }
-    
+
     return Padding(
       padding: EdgeInsets.all(16.r),
       child: Text(
@@ -450,7 +668,7 @@ class SessionCard extends StatelessWidget {
       ),
     );
   }
-  
+
   Widget _buildSessionFooter() {
     return Container(
       padding: EdgeInsets.all(16.r),
@@ -491,10 +709,8 @@ class SessionCard extends StatelessWidget {
                 ),
               ],
             ),
-          
           if (session.date != null && session.link != null)
             SizedBox(height: 16.h),
-          
           if (session.link != null && session.link!.isNotEmpty)
             SizedBox(
               width: double.infinity,

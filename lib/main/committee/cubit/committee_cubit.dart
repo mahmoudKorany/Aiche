@@ -17,17 +17,33 @@ class CommitteeCubit extends Cubit<CommitteeState> {
   Future<void> getCommitteeData() async {
     committeeList = [];
     emit(GetCommitteeLoadingState());
-    try {
-      DioHelper.getData(
-              url: UrlConstants.getCommittees, query: {}, token: token)
-          .then((value) {
-        for (var element in value.data['data']) {
-          committeeList.add(CommitteeModel.fromJson(element));
-        }
-        emit(GetCommitteeSuccessState());
-      });
-    } catch (error) {
-      emit(GetCommitteeErrorState(error.toString()));
+
+    final response = await DioHelper.getData(
+        url: UrlConstants.getCommittees, query: {}, token: token);
+
+    // Check if the response contains an error
+    if (response.data != null &&
+        response.data is Map &&
+        response.data['error'] == true) {
+      String errorMessage =
+          response.data['message'] ?? 'Failed to load committee data';
+      emit(GetCommitteeErrorState(errorMessage));
+      return;
+    }
+
+    if (response.statusCode == 200) {
+      for (var element in response.data['data']) {
+        committeeList.add(CommitteeModel.fromJson(element));
+      }
+      emit(GetCommitteeSuccessState());
+    } else {
+      String errorMessage = 'Failed to load committee data';
+      if (response.data != null &&
+          response.data is Map &&
+          response.data['message'] != null) {
+        errorMessage = response.data['message'];
+      }
+      emit(GetCommitteeErrorState(errorMessage));
     }
   }
 }
