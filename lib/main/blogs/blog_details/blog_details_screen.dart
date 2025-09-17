@@ -331,13 +331,16 @@ class _BlogDetailsScreenState extends State<BlogDetailsScreen>
   // }
 
   Widget _buildBody() {
-    return Text(
-      widget.blog.description ?? '',
-      style: TextStyle(
-        fontSize: 16.sp,
-        color: Colors.white,
-        height: 1.8,
-        letterSpacing: 0.3,
+    return Directionality(
+      textDirection: TextDirection.rtl,
+      child: Text(
+        widget.blog.description ?? '',
+        style: TextStyle(
+          fontSize: 16.sp,
+          color: Colors.white,
+          height: 1.8,
+          letterSpacing: 0.3,
+        ),
       ),
     );
   }
@@ -491,7 +494,7 @@ class _BlogDetailsScreenState extends State<BlogDetailsScreen>
 
   Widget _buildShareButton() {
     return Padding(
-      padding:EdgeInsets.only( bottom: Platform.isIOS ?  0.h : 20),
+      padding: EdgeInsets.only(bottom: Platform.isIOS ? 0.h : 20),
       child: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
