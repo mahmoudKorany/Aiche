@@ -1,6 +1,6 @@
 import 'package:aiche/core/shared/components/gaps.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // Add this import for clipboard
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:aiche/core/shared/components/components.dart';
@@ -15,8 +15,35 @@ class AwardsScreen extends StatefulWidget {
   State<AwardsScreen> createState() => _AwardsScreenState();
 }
 
-class _AwardsScreenState extends State<AwardsScreen> {
-  // Sample data for awards
+class _AwardsScreenState extends State<AwardsScreen>
+    with TickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+
+    _fadeAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOut,
+    ));
+
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,87 +54,81 @@ class _AwardsScreenState extends State<AwardsScreen> {
         return Scaffold(
           body: Stack(
             children: [
-              const BackGround(), // Use the existing BackGround component
+              const BackGround(),
               SafeArea(
                 bottom: false,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Custom App Bar
+                    // Simple App Bar
                     Padding(
                       padding: EdgeInsets.symmetric(
                           horizontal: 16.w, vertical: 16.h),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
                         children: [
                           const Pop(),
-                          SizedBox(width: 16.w), // Balancing the layout
+                          SizedBox(width: 16.w),
                           Text(
                             "Awards",
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 20.sp,
+                              fontSize: 18.sp,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          SizedBox(width: 40.w), // Balancing the layout
                         ],
+                      ),
+                    ),
+
+                    // Simple Header
+                    FadeTransition(
+                      opacity: _fadeAnimation,
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20.w),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "AIChE Achievements",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 20.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 6.h),
+                            Text(
+                              "Browse awards and recognitions",
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.8),
+                                fontSize: 13.sp,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
 
-                    // Header Section
-                    Padding(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: 16.w, vertical: 16.h),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            "Aiche Achievements",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24.sp,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 8.h),
-                          Text(
-                            "Browse through all the awards and recognitions",
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.8),
-                              fontSize: 14.sp,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                    const Gap20(),
 
                     // Awards List
                     Expanded(
-                      child: Container(
-                        margin: EdgeInsets.only(top: 16.h),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(30.r),
-                            topRight: Radius.circular(30.r),
-                          ),
-                        ),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(30.r),
-                            topRight: Radius.circular(30.r),
-                          ),
-                          child: ListView.builder(
-                            physics: const BouncingScrollPhysics(),
-                            padding: EdgeInsets.all(16.r),
-                            itemCount: awards.length,
-                            itemBuilder: (context, index) {
-                              return buildAwardCard(awards[index]);
-                            },
-                          ),
-                        ),
-                      ),
+                      child: awards.isEmpty
+                          ? _buildSimpleEmptyState()
+                          : ListView.builder(
+                              physics: const BouncingScrollPhysics(),
+                              padding: EdgeInsets.only(
+                                top: 10.h,
+                                left: 16.w,
+                                right: 16.w,
+                                bottom: 100.h,
+                              ),
+                              itemCount: awards.length,
+                              itemBuilder: (context, index) {
+                                return _buildSimpleAwardCard(
+                                    awards[index], index);
+                              },
+                            ),
                     ),
                   ],
                 ),
@@ -119,272 +140,301 @@ class _AwardsScreenState extends State<AwardsScreen> {
     );
   }
 
-  Widget buildAwardCard(AwardsModel award) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 16.h),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(16.r),
-          onTap: () {
-            // Show award details
-            showAwardDetails(context, award);
-          },
-          child: Padding(
-            padding: EdgeInsets.all(16.r),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Award icon/trophy
-                Container(
-                  width: 60.w,
-                  height: 60.h,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF111347).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
-                  child: Icon(
-                    Icons.emoji_events_rounded,
-                    color: const Color(0xFF111347),
-                    size: 32.sp,
-                  ),
+  Widget _buildSimpleEmptyState() {
+    return Center(
+      child: FadeTransition(
+        opacity: _fadeAnimation,
+        child: Padding(
+          padding: EdgeInsets.all(32.r),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 60.r,
+                height: 60.r,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  shape: BoxShape.circle,
                 ),
-                SizedBox(width: 16.w),
-
-                // Award details
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        award.title ?? "Award Title",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        award.description ?? "Award Description",
-                        style: TextStyle(
-                          color: Colors.black54,
-                          fontSize: 14.sp,
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      SizedBox(height: 8.h),
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.calendar_today,
-                            size: 14.sp,
-                            color: Colors.black45,
-                          ),
-                          SizedBox(width: 4.w),
-                          Text(
-                            award.date ?? "Award Date",
-                            style: TextStyle(
-                              color: Colors.black45,
-                              fontSize: 12.sp,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                child: Icon(
+                  Icons.emoji_events_outlined,
+                  color: Colors.white.withOpacity(0.7),
+                  size: 30.sp,
                 ),
-
-                // Chevron icon
-                Icon(
-                  Icons.chevron_right,
-                  color: Colors.black45,
-                  size: 24.sp,
+              ),
+              const Gap15(),
+              Text(
+                'No Awards Yet',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16.sp,
+                  fontWeight: FontWeight.bold,
                 ),
-              ],
-            ),
+              ),
+              const Gap10(),
+              Text(
+                'Check back later for awards',
+                style: TextStyle(
+                  color: Colors.white.withOpacity(0.7),
+                  fontSize: 12.sp,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            ],
           ),
         ),
       ),
     );
   }
 
-  void showAwardDetails(BuildContext context, AwardsModel award) {
+  Widget _buildSimpleAwardCard(AwardsModel award, int index) {
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: Container(
+        margin: EdgeInsets.only(bottom: 12.h),
+        padding: EdgeInsets.all(16.r),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16.r),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16.r),
+          onTap: () {
+            _showSimpleAwardDetails(context, award);
+          },
+          child: Row(
+            children: [
+              // Simple award icon
+              Container(
+                width: 40.w,
+                height: 40.h,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF111347),
+                      const Color(0xFF12426F),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(10.r),
+                ),
+                child: Icon(
+                  Icons.emoji_events_rounded,
+                  color: Colors.white,
+                  size: 20.sp,
+                ),
+              ),
+              SizedBox(width: 12.w),
+
+              // Award details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      award.title ?? "Award Title",
+                      style: TextStyle(
+                        color: const Color(0xFF111347),
+                        fontSize: 14.sp,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 4.h),
+                    Text(
+                      award.description ?? "Award Description",
+                      style: TextStyle(
+                        color: Colors.black54,
+                        fontSize: 12.sp,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 6.h),
+                    // Simple date
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.calendar_today,
+                          size: 10.sp,
+                          color: Colors.grey,
+                        ),
+                        SizedBox(width: 4.w),
+                        Text(
+                          award.date ?? "Award Date",
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 10.sp,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+
+              // Simple chevron
+              Icon(
+                Icons.chevron_right,
+                color: Colors.grey.shade400,
+                size: 16.sp,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showSimpleAwardDetails(BuildContext context, AwardsModel award) {
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.64,
+        height: MediaQuery.of(context).size.height * 0.5,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(30.r),
-            topRight: Radius.circular(30.r),
+            topLeft: Radius.circular(20.r),
+            topRight: Radius.circular(20.r),
           ),
         ),
         child: Column(
           children: [
-            // Bottom sheet handle
+            // Handle
             Container(
-              margin: EdgeInsets.symmetric(vertical: 12.h),
-              width: 40.w,
-              height: 4.h,
+              margin: EdgeInsets.symmetric(vertical: 8.h),
+              width: 30.w,
+              height: 3.h,
               decoration: BoxDecoration(
-                color: Colors.grey.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(4.r),
+                color: Colors.grey.shade300,
+                borderRadius: BorderRadius.circular(2.r),
               ),
             ),
 
-            // Scrollable content
+            // Content
             Expanded(
-              child: SingleChildScrollView(
-                padding: EdgeInsets.symmetric(horizontal: 20.0.w),
-                physics: const BouncingScrollPhysics(),
+              child: Padding(
+                padding: EdgeInsets.all(20.r),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Award icon/trophy
-                    Center(
-                      child: Container(
-                        width: 80.w,
-                        height: 80.h,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF111347).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(20.r),
+                    // Award icon
+                    Container(
+                      width: 60.w,
+                      height: 60.h,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            const Color(0xFF111347),
+                            const Color(0xFF12426F),
+                          ],
                         ),
-                        child: Icon(
-                          Icons.emoji_events_rounded,
-                          color: const Color(0xFF111347),
-                          size: 48.sp,
-                        ),
+                        borderRadius: BorderRadius.circular(15.r),
+                      ),
+                      child: Icon(
+                        Icons.emoji_events_rounded,
+                        color: Colors.white,
+                        size: 30.sp,
                       ),
                     ),
-                    const Gap35(),
+                    const Gap20(),
 
                     // Award title
-                    Center(
-                      child: Text(
-                        award.title ?? "Award Title",
-                        style: TextStyle(
-                          color: Colors.black,
-                          fontSize: 22.sp,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        textAlign: TextAlign.center,
+                    Text(
+                      award.title ?? "Award Title",
+                      style: TextStyle(
+                        color: const Color(0xFF111347),
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.bold,
                       ),
+                      textAlign: TextAlign.center,
                     ),
                     const Gap10(),
 
                     // Award date
-                    Center(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.calendar_today,
-                            size: 16.sp,
-                            color: Colors.black45,
-                          ),
-                          SizedBox(width: 6.w),
-                          Text(
-                            award.date ?? "Award Date",
-                            style: TextStyle(
-                              color: Colors.black45,
-                              fontSize: 14.sp,
+                    Text(
+                      award.date ?? "Award Date",
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 12.sp,
+                      ),
+                    ),
+                    const Gap20(),
+
+                    // Description
+                    Expanded(
+                      child: Container(
+                        padding: EdgeInsets.all(16.r),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Description",
+                              style: TextStyle(
+                                color: const Color(0xFF111347),
+                                fontSize: 14.sp,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                        ],
+                            const Gap10(),
+                            Expanded(
+                              child: Text(
+                                award.description ?? "No description available",
+                                style: TextStyle(
+                                  color: Colors.black87,
+                                  fontSize: 13.sp,
+                                  height: 1.4,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                     const Gap20(),
-
-                    // Description header
-                    Text(
-                      "Description",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const Gap10(),
-
-                    // Description text
-                    Text(
-                      award.description ?? "Award Description",
-                      style: TextStyle(
-                        color: Colors.black87,
-                        fontSize: 16.sp,
-                        height: 1.5,
-                      ),
-                    ),
-                    const Gap20(),
-
-                    // Divider
-                    const Divider(),
-                    const Gap20(),
-
-                    // Additional info
-                    Text(
-                      "Certificate Information",
-                      style: TextStyle(
-                        color: Colors.black,
-                        fontSize: 18.sp,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const Gap10(),
-
-                    // Issue date
-                    buildInfoRow("Issue Date:", award.date ?? "N/A"),
 
                     // Share button
-                    const Gap50(),
-                    Center(
+                    SizedBox(
+                      width: double.infinity,
                       child: ElevatedButton.icon(
                         onPressed: () {
-                          // Copy certificate link to clipboard
-                          final certificateLink = award.title ??
-                              "https://aiche.org/certificates/${award.id}";
-                          Clipboard.setData(
-                              ClipboardData(text: certificateLink));
+                          final text =
+                              "${award.title} - ${award.description ?? "Check out this award from AIChE!"}";
+                          Clipboard.setData(ClipboardData(text: text));
                           showToast(
-                            msg: "Certificate link copied to clipboard!",
+                            msg: "Award details copied!",
                             state: MsgState.success,
                           );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF111347),
-                          foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 24.w, vertical: 12.h),
+                          padding: EdgeInsets.symmetric(vertical: 12.h),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12.r),
+                            borderRadius: BorderRadius.circular(10.r),
                           ),
                         ),
-                        icon: Icon(Icons.copy, size: 20.sp),
+                        icon:
+                            Icon(Icons.share, size: 16.sp, color: Colors.white),
                         label: Text(
-                          "Copy Certificate Link",
-                          style: TextStyle(fontSize: 16.sp),
+                          "Share Award",
+                          style: TextStyle(
+                            fontSize: 14.sp,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
-
-                    // Bottom padding to ensure content doesn't stick to the bottom
-                    SizedBox(height: 20.h),
                   ],
                 ),
               ),
@@ -392,35 +442,6 @@ class _AwardsScreenState extends State<AwardsScreen> {
           ],
         ),
       ),
-    );
-  }
-
-  Widget buildInfoRow(String label, String value) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 150.w,
-          child: Text(
-            label,
-            style: TextStyle(
-              color: Colors.black54,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-        Expanded(
-          child: Text(
-            value,
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 14.sp,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ),
-      ],
     );
   }
 }

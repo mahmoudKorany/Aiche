@@ -23,7 +23,7 @@ if (flutterVersionName == null) {
 
 android {
     namespace 'com.aiche.aiche'
-    compileSdk 36
+    compileSdk 34
 
     buildFeatures {
         buildConfig true
@@ -36,7 +36,7 @@ android {
     defaultConfig {
         applicationId "com.aiche.aiche"
         minSdkVersion flutter.minSdkVersion
-        targetSdk 36
+        targetSdk 34
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
         multiDexEnabled true

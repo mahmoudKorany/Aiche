@@ -16,14 +16,15 @@ class SessionsScreen extends StatefulWidget {
 }
 
 class _SessionsScreenState extends State<SessionsScreen> {
-  bool _isMembershipInactive =
-      true; // Set to true to show inactive state by default
+  bool _isMembershipInactive = false; // Start as active; will switch on 403
 
   @override
   void initState() {
     super.initState();
-    // Don't load sessions automatically - just show inactive state
-    // LayoutCubit.get(context).getUserSessions();
+    // Fetch sessions when the screen opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      LayoutCubit.get(context).getUserSessions();
+    });
   }
 
   @override
@@ -39,11 +40,11 @@ class _SessionsScreenState extends State<SessionsScreen> {
             padding: EdgeInsets.all(16.0.r),
             child: RefreshIndicator(
               onRefresh: () async {
-                // Keep showing inactive state even on refresh
-                // setState(() {
-                //   _isMembershipInactive = false;
-                // });
-                // await LayoutCubit.get(context).getUserSessions();
+                // Try again on pull-to-refresh
+                setState(() {
+                  _isMembershipInactive = false;
+                });
+                await LayoutCubit.get(context).getUserSessions();
               },
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
