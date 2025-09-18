@@ -49,21 +49,22 @@ class DefaultFirebaseOptions {
     }
   }
 
-  // Values from GoogleService-Info.plist
+  // Updated to match google-services.json
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDbcrw3jWpdlrVjGuaoy_DcprlIoelWWcw',
-    appId: '1:398829340890:android:8d1b007e8944a8b532bde3',
-    messagingSenderId: '398829340890',
-    projectId: 'notfication-a3dd6',
-    storageBucket: 'notfication-a3dd6.firebasestorage.app',
+    apiKey: 'AIzaSyB2ESvC8xv8oF-D9xDQiO1qpbHxNg-1BC8',
+    appId: '1:673533378711:android:a97df779f6d726bf6b29d2',
+    messagingSenderId: '673533378711',
+    projectId: 'ahiche-3ec5d',
+    storageBucket: 'ahiche-3ec5d.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyDbcrw3jWpdlrVjGuaoy_DcprlIoelWWcw',
-    appId: '1:398829340890:ios:8d1b007e8944a8b532bde3',
-    messagingSenderId: '398829340890',
-    projectId: 'notfication-a3dd6',
-    storageBucket: 'notfication-a3dd6.firebasestorage.app',
+    apiKey: 'AIzaSyB2ESvC8xv8oF-D9xDQiO1qpbHxNg-1BC8',
+    appId:
+        '1:673533378711:ios:a97df779f6d726bf6b29d2', // You may need to create iOS app in Firebase console
+    messagingSenderId: '673533378711',
+    projectId: 'ahiche-3ec5d',
+    storageBucket: 'ahiche-3ec5d.firebasestorage.app',
     iosBundleId: 'com.aiche.aiche',
   );
 }
