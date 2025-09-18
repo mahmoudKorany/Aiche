@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io';
 import 'package:aiche/core/services/network_connectivity_service.dart';
 import 'package:aiche/core/utils/firebase_error_handler.dart';
-import 'package:aiche/core/utils/notification_utils.dart';
 import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -276,31 +275,37 @@ class FirebaseMessagingService {
     // debugPrint('Message data: ${message.data}');
 
     if (message.notification != null) {
-      // debugPrint(
-      //     'Message also contained a notification: ${message.notification}');
-      _showAwesomeNotification(message);
+      AwesomeNotifications().createNotification(
+        content: NotificationContent(
+          id: 1,
+          channelKey: "basic_channel",
+          title: message.notification?.title ?? '',
+          body: message.notification?.body ?? '',
+          notificationLayout: NotificationLayout.Default,
+          payload: Map<String, String?>.from(
+            message.data.map((key, value) => MapEntry(key, value?.toString())),
+          ),
+        ),
+      );
 
-      // Show a toast for the notification
-      if (message.notification?.title != null &&
-          message.notification?.body != null) {
-        NotificationUtils.showNotificationToast(
-          title: message.notification!.title!,
-          body: message.notification!.body!,
-        );
-      }
+      _showAwesomeNotification(message);
     }
   }
 
   void _handleMessageOpenedApp(RemoteMessage message) {
-    // debugPrint('A notification message was tapped!');
-    // debugPrint('Message data: ${message.data}');
-
-    if (message.notification != null) {
-      // debugPrint(
-      //     'Message also contained a notification: ${message.notification}');
-    }
-
     _onMessageOpenedAppController.add(message);
+    AwesomeNotifications().createNotification(
+      content: NotificationContent(
+        id: 1,
+        channelKey: "basic_channel",
+        title: message.notification?.title ?? '',
+        body: message.notification?.body ?? '',
+        notificationLayout: NotificationLayout.Default,
+        payload: Map<String, String?>.from(
+          message.data.map((key, value) => MapEntry(key, value?.toString())),
+        ),
+      ),
+    );
   }
 
   Future<void> _showAwesomeNotification(RemoteMessage message) async {
@@ -377,8 +382,16 @@ class FirebaseMessagingService {
 // This needs to be a top-level function
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  // Firebase is already initialized in main, so we don't need to initialize it again
-  // The Firebase.initializeApp() call is not needed here since Firebase is already initialized
-
-  // debugPrint("Handling a background message: ${message.messageId}");
+  AwesomeNotifications().createNotification(
+    content: NotificationContent(
+      id: 1,
+      channelKey: "basic_channel",
+      title: message.notification?.title ?? '',
+      body: message.notification?.body ?? '',
+      notificationLayout: NotificationLayout.Default,
+      payload: Map<String, String?>.from(
+        message.data.map((key, value) => MapEntry(key, value?.toString())),
+      ),
+    ),
+  );
 }

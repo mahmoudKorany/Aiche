@@ -1,5 +1,6 @@
+import 'dart:io';
+
 import 'package:aiche/auth/auth_screens/login_screen.dart';
-import 'package:aiche/core/services/firebase_messaging_service.dart';
 import 'package:aiche/core/shared/constants/constants.dart';
 import 'package:aiche/main/home/home_screen/home_layout_screen.dart';
 import 'package:aiche/welcome_screens/onboarding_screen/onboarding.dart';
@@ -15,6 +16,20 @@ import 'core/controllers/notification_controller.dart';
 import 'firebase_options.dart';
 import 'my_app.dart';
 
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  if (kDebugMode) {
+    print('Handling a background message ${message.messageId}');
+  }
+  AwesomeNotifications().createNotification(
+    content: NotificationContent(
+      id: 1,
+      channelKey: "basic_channel",
+      title: message.notification?.title ?? '',
+      body: message.notification?.body ?? '',
+      notificationLayout: NotificationLayout.Default,
+    ),
+  );
+}
 
 Widget? startScreen;
 void main() async {
@@ -113,13 +128,13 @@ void main() async {
   await CacheHelper.saveData(key: 'noOfRequest', value: noOfRequest);
 
   // Initialize Firebase Messaging Service AFTER AwesomeNotifications
-  try {
-    await FirebaseMessagingService.instance.init();
-  } catch (e) {
-    if (kDebugMode) {
-      print('Firebase Messaging initialization error: $e');
-    }
-  }
+  // try {
+  //   await FirebaseMessagingService.instance.init();
+  // } catch (e) {
+  //   if (kDebugMode) {
+  //     print('Firebase Messaging initialization error: $e');
+  //   }
+  // }
 
   // Get FCM token with better error handling - make it completely optional
   String? fcmToken;
@@ -150,7 +165,37 @@ void main() async {
 
   token = await CacheHelper.getData(key: 'token');
   bool? onBoarding = await CacheHelper.getData(key: 'onBoarding');
-
+  if (Platform.isAndroid) {
+    FirebaseMessaging.onMessage.listen((message) async {
+      if (kDebugMode) {
+        print('Handling a background message ${message.messageId}');
+      }
+      AwesomeNotifications().createNotification(
+        content: NotificationContent(
+          id: 1,
+          channelKey: "basic_channel",
+          title: message.notification?.title ?? '',
+          body: message.notification?.body ?? '',
+          notificationLayout: NotificationLayout.Default,
+        ),
+      );
+    });
+    FirebaseMessaging.onMessageOpenedApp.listen((message) async {
+      if (kDebugMode) {
+        print('Handling a background message ${message.messageId}');
+      }
+      AwesomeNotifications().createNotification(
+        content: NotificationContent(
+          id: 1,
+          channelKey: "basic_channel",
+          title: message.notification?.title ?? '',
+          body: message.notification?.body ?? '',
+          notificationLayout: NotificationLayout.Default,
+        ),
+      );
+    });
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  }
   //print('Token: $token');
   if (token == null && onBoarding == null) {
     startScreen = const Onboarding();
